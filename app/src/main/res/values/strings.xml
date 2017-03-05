@@ -8,4 +8,7 @@
 
     <string name="comerce">Comerce</string>
     <string name="user">User</string>
+
+    <string name="hello_comerce_fragment">Hello comerce fragment</string>
+    <string name="hello_user_fragment">Hello user fragment</string>
 </resources>

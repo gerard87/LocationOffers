@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -57,6 +58,27 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
         return mDataset.size();
+    }
+
+    public void removeAll(){
+        Iterator<Message> iter = mDataset.iterator();
+        while(iter.hasNext()){
+            Message message = iter.next();
+            int position = mDataset.indexOf(message);
+            iter.remove();
+            notifyItemRemoved(position);
+        }
+    }
+
+    public void addAll(List<Message> list){
+        for (Message message: list){
+            add(message);
+        }
+    }
+
+    public void add(Message message){
+        mDataset.add(message);
+        notifyItemInserted(mDataset.size()-1);
     }
 }
 

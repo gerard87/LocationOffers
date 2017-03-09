@@ -1,7 +1,9 @@
 package com.android.udl.locationoffers;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ public class ComerceFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
     private List<Message> messages;
+    private RecyclerView mRecyclerView;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -48,24 +51,52 @@ public class ComerceFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_comerce, container, false);
+        return inflater.inflate(R.layout.fragment_comerce, container, false);
+    }
 
-        RecyclerView rv = (RecyclerView) view.findViewById(R.id.rv);
-        rv.setHasFixedSize(true);
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
+        mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        rv.setLayoutManager(llm);
+        mRecyclerView.setLayoutManager(llm);
         initalizeData();
         MyAdapter adapter = new MyAdapter(messages);
-        rv.setAdapter(adapter);
+        mRecyclerView.setAdapter(adapter);
 
-        return view;
+        /* Swipe down to refresh */
+        final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
+        sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                read();
+                sr.setRefreshing(false);
+            }
+        });
+        sr.setColorSchemeResources(android.R.color.holo_blue_dark,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_red_dark);
+        /* /Swipe down to refresh */
+
+
     }
+
+    private void read () {
+        MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
+        adapter.removeAll();
+        initalizeData();
+        adapter.addAll(messages);
+    }
+
+
 
     // TODO: Rename method, update argument and hook method into UI event
     /*public void onButtonPressed(Uri uri) {

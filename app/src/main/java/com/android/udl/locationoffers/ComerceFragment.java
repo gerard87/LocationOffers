@@ -1,27 +1,26 @@
 package com.android.udl.locationoffers;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.udl.locationoffers.adapters.MyAdapter;
+import com.android.udl.locationoffers.domain.Message;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ComerceFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ComerceFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class ComerceFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private List<Message> messages;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -30,18 +29,9 @@ public class ComerceFragment extends Fragment {
     //private OnFragmentInteractionListener mListener;
 
     public ComerceFragment() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ComerceFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+
     public static ComerceFragment newInstance(String param1, String param2) {
         ComerceFragment fragment = new ComerceFragment();
         Bundle args = new Bundle();
@@ -58,13 +48,23 @@ public class ComerceFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_comerce, container, false);
+        View view = inflater.inflate(R.layout.fragment_comerce, container, false);
+
+        RecyclerView rv = (RecyclerView) view.findViewById(R.id.rv);
+        rv.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        rv.setLayoutManager(llm);
+        initalizeData();
+        MyAdapter adapter = new MyAdapter(messages);
+        rv.setAdapter(adapter);
+
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -105,4 +105,10 @@ public class ComerceFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }*/
+
+    private void initalizeData(){
+        messages = new ArrayList<>();
+        messages.add(new Message("Title", "Description", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+    }
 }

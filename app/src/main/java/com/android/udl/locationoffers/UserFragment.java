@@ -1,4 +1,7 @@
 package com.android.udl.locationoffers;
+
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -6,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +29,6 @@ import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 
-import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
 public class UserFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener,
@@ -36,16 +36,16 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
 
 
     private GoogleApiClient mGoogleApiClient;
-    private static final int GOOGLE_API_CLIENT_ID = 0;
     private LocationRequest mLocationRequest;
-    private static int UPDATE_INTERVAL = 20000;
-    private static int FASTEST_INTERVAL = 5000;
+    private static int UPDATE_INTERVAL = 2000;
+    private static int FASTEST_INTERVAL = 500;
     private static int DISPLACEMENT = 1;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     private Button btn1;
     private TextView tv1;
-    private int contador = 0;
+
+    private boolean mRequestingLocationUpdates = false;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,7 +93,6 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
             buildGoogleApiClient();
             createLocationRequest();
         }
-
     }
 
 
@@ -111,8 +110,8 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
                             placeLikelihood.getLikelihood()));
 
                     allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
-
                 }
+
                 likelyPlaces.release();
                 Log.i("CALLPLACEDETECTIONAPI:","text view modificat");
                 tv1.setText(allPlaces);
@@ -132,27 +131,15 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
         tv1 = (TextView) getView().findViewById(R.id.tvPlacesList);
 
         btn1 = (Button) getView().findViewById(R.id.button2);
+        btn1.setText("START LOCATION UPDATES");
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //callPlaceDetectionApi();
-                if (mGoogleApiClient.isConnected()) {
-                    if (ContextCompat.checkSelfPermission(getContext(),
-                            ACCESS_FINE_LOCATION)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(getActivity(),
-                                new String[]{ACCESS_FINE_LOCATION},
-                                100);
-                    } else {
-                        callPlaceDetectionApi();
-                    }
-
-                }
+                togglePeriodicLocationUpdates();
             }
         });
-
-        //ActivityCompat.requestPermissions(this.getActivity(),new String[]{ACCESS_FINE_LOCATION}, 1);
     }
+
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -198,7 +185,7 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
         void onFragmentInteraction(Uri uri);
     }*/
 
-    /*@Override
+    @Override
     public void onStart() {
         super.onStart();
         if (mGoogleApiClient != null) {
@@ -212,15 +199,16 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
             mGoogleApiClient.disconnect();
         }
         super.onStop();
-    }*/
+    }
 
     protected void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(getActivity())
+                .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
-                .enableAutoManage(this.getActivity(),GOOGLE_API_CLIENT_ID,this)
                 .build();
     }
 
@@ -249,35 +237,14 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
     public void onConnected(@Nullable Bundle bundle) {
         //cuan esta conectat amb la api, per tant es on s'ha de cridar lo que actualitzi
         callPlaceDetectionApi();
-        startLocationUpdates();
+
+        if (mRequestingLocationUpdates)
+            startLocationUpdates();
     }
-
-    protected void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this.getContext(),ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this.getContext(),ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);
-
-    }
-
-
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        mGoogleApiClient.connect();
     }
 
 
@@ -296,7 +263,51 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
 
     @Override
     public void onLocationChanged(Location location){
-        Toast.makeText(this.getActivity(),"HOLAHOLA!!!!",Toast.LENGTH_SHORT);
+        Toast.makeText(getActivity(),"Location changed!!!!",Toast.LENGTH_SHORT).show();
         callPlaceDetectionApi();
+    }
+
+    private void togglePeriodicLocationUpdates() {
+        if (!mRequestingLocationUpdates) {
+            // Changing the button text
+
+            mRequestingLocationUpdates = true;
+            btn1.setText("STOP LOCATION UPDATES");
+
+            startLocationUpdates();
+
+            Log.d("LO", "Periodic location updates started!");
+
+        } else {
+            // Changing the button text
+
+            mRequestingLocationUpdates = false;
+            btn1.setText("START LOCATION UPDATES");
+
+            stopLocationUpdates();
+
+            Log.d("LO", "Periodic location updates stopped!");
+        }
+    }
+
+
+    protected void startLocationUpdates(){
+        if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+
+    }
+
+    protected void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
+
     }
 }

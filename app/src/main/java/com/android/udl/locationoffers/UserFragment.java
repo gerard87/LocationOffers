@@ -1,12 +1,34 @@
 package com.android.udl.locationoffers;
-
-import android.content.Context;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.PlaceLikelihood;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
 /**
@@ -17,7 +39,21 @@ import android.view.ViewGroup;
  * Use the {@link UserFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class UserFragment extends Fragment {
+public class UserFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener,
+                                                        GoogleApiClient.ConnectionCallbacks, LocationListener{
+
+
+    private GoogleApiClient mGoogleApiClient;
+    private static final int GOOGLE_API_CLIENT_ID = 0;
+    private LocationRequest mLocationRequest;
+    private static int UPDATE_INTERVAL = 20000;
+    private static int FASTEST_INTERVAL = 5000;
+    private static int DISPLACEMENT = 1;
+
+    private Button btn1;
+    private TextView tv1;
+    private int contador = 0;
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -54,10 +90,38 @@ public class UserFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+            buildGoogleApiClient();
+            createLocationRequest();
+
+    }
+
+
+    private void callPlaceDetectionApi() throws SecurityException {
+        PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
+                .getCurrentPlace(mGoogleApiClient, null);
+        result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+            @Override
+            public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+                String allPlaces = "";
+                for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                    Log.i("CALLPLACEDETECTIONAPI", String.format("Place '%s' with " +
+                                    "likelihood: %g",
+                            placeLikelihood.getPlace().getName(),
+                            placeLikelihood.getLikelihood()));
+
+                    allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
+
+                }
+                likelyPlaces.release();
+                Log.i("CALLPLACEDETECTIONAPI:","text view modificat");
+                tv1.setText(allPlaces);
+            }
+        });
     }
 
     @Override
@@ -65,6 +129,38 @@ public class UserFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_user, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstance){
+        tv1 = (TextView) getView().findViewById(R.id.tvPlacesList);
+
+        btn1 = (Button) getView().findViewById(R.id.button2);
+        btn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //callPlaceDetectionApi();
+                if (mGoogleApiClient.isConnected()) {
+                    if (ContextCompat.checkSelfPermission(getContext(),
+                            ACCESS_FINE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{ACCESS_FINE_LOCATION},
+                                100);
+                    } else {
+                        callPlaceDetectionApi();
+                    }
+
+                }
+            }
+        });
+
+        //ActivityCompat.requestPermissions(this.getActivity(),new String[]{ACCESS_FINE_LOCATION}, 1);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i("ON CONNECTION FAILED","Google Places API connection failed with error code:");
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -105,4 +201,102 @@ public class UserFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }*/
+
+    /*@Override
+    public void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
+    }*/
+
+    protected void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Places.PLACE_DETECTION_API)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .enableAutoManage(this.getActivity(),GOOGLE_API_CLIENT_ID,this)
+                .build();
+    }
+
+    protected void createLocationRequest(){
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
+    }
+
+    private boolean checkPlayServices(){
+        GoogleApiAvailability googleAPIAvailability = GoogleApiAvailability.getInstance();
+        int result = googleAPIAvailability.isGooglePlayServicesAvailable(this.getActivity());
+        if(result != ConnectionResult.SUCCESS){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        //cuan esta conectat amb la api, per tant es on s'ha de cridar lo que actualitzi
+        callPlaceDetectionApi();
+        startLocationUpdates();
+    }
+
+    protected void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this.getContext(),ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this.getContext(),ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+
+    }
+
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 100:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    callPlaceDetectionApi();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location){
+        Toast.makeText(this.getActivity(),"HOLAHOLA!!!!",Toast.LENGTH_SHORT);
+        callPlaceDetectionApi();
+    }
 }

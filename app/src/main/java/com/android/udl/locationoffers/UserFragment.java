@@ -31,14 +31,6 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link UserFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link UserFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class UserFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener,
                                                         GoogleApiClient.ConnectionCallbacks, LocationListener{
 
@@ -49,6 +41,7 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
     private static int UPDATE_INTERVAL = 20000;
     private static int FASTEST_INTERVAL = 5000;
     private static int DISPLACEMENT = 1;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     private Button btn1;
     private TextView tv1;
@@ -95,8 +88,11 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        if (checkPlayServices()) {
             buildGoogleApiClient();
             createLocationRequest();
+        }
 
     }
 
@@ -240,6 +236,10 @@ public class UserFragment extends Fragment implements GoogleApiClient.OnConnecti
         GoogleApiAvailability googleAPIAvailability = GoogleApiAvailability.getInstance();
         int result = googleAPIAvailability.isGooglePlayServicesAvailable(this.getActivity());
         if(result != ConnectionResult.SUCCESS){
+            if(googleAPIAvailability.isUserResolvableError(result)) {
+                googleAPIAvailability.getErrorDialog(getActivity(), result,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            }
             return false;
         }
         return true;

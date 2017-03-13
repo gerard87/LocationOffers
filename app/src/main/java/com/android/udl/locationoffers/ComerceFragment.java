@@ -13,7 +13,9 @@ import android.widget.Toast;
 
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.OnItemClickListener;
+import com.github.clans.fab.FloatingActionMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ public class ComerceFragment extends Fragment {
 
     private List<Message> messages;
     private RecyclerView mRecyclerView;
+    private FloatingActionMenu fab_menu;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -72,6 +75,12 @@ public class ComerceFragment extends Fragment {
         initalizeData();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick());
         mRecyclerView.setAdapter(adapter);
+
+        /* Show/hide floating button*/
+        fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
+        fab_menu.setClosedOnTouchOutside(true);
+        mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
+        /* /Show/hide floating button*/
 
         /* Swipe down to refresh */
         final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
@@ -154,5 +163,28 @@ public class ComerceFragment extends Fragment {
         messages = new ArrayList<>();
         messages.add(new Message("Title", "Description", R.drawable.ic_person_black_24dp));
         messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+
+
+
+
+
+
     }
 }

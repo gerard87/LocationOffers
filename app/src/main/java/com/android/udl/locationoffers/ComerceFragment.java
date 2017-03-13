@@ -9,9 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.listeners.OnItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +70,7 @@ public class ComerceFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
         initalizeData();
-        MyAdapter adapter = new MyAdapter(messages);
+        MyAdapter adapter = new MyAdapter(messages, new ItemClick());
         mRecyclerView.setAdapter(adapter);
 
         /* Swipe down to refresh */
@@ -94,6 +96,17 @@ public class ComerceFragment extends Fragment {
         adapter.removeAll();
         initalizeData();
         adapter.addAll(messages);
+    }
+
+    private void showToast (String text){
+        Toast.makeText(getContext(), text,Toast.LENGTH_SHORT).show();
+    }
+
+    private class ItemClick implements OnItemClickListener {
+        @Override
+        public void onItemClick(View view, int position){
+                showToast("Clicked element: "+Integer.toString(position));
+        }
     }
 
 

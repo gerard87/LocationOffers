@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.listeners.OnItemClickListener;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +20,9 @@ import java.util.List;
  */
 
 public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+
     private List<Message> mDataset;
+    private OnItemClickListener listener;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
@@ -35,8 +38,9 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         }
     }
 
-    public MyAdapter(List<Message> myDataset) {
+    public MyAdapter(List<Message> myDataset, OnItemClickListener listener) {
         mDataset = myDataset;
+        this.listener = listener;
     }
 
     @Override
@@ -48,10 +52,17 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.title.setText(mDataset.get(position).getTitle());
         holder.description.setText(mDataset.get(position).getDescription());
         holder.image.setImageResource(mDataset.get(position).getImageId());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onItemClick(v, position);
+            }
+        });
 
     }
 

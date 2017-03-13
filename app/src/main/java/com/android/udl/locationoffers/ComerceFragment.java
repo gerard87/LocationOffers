@@ -1,5 +1,11 @@
 package com.android.udl.locationoffers;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,9 +18,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.adapters.MyAdapter;
+import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.OnItemClickListener;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
 import java.util.ArrayList;
@@ -29,12 +37,13 @@ public class ComerceFragment extends Fragment {
     private List<Message> messages;
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
+    private FloatingActionButton fab_button;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    //private OnFragmentInteractionListener mListener;
+    private OnFragmentInteractionListener mListener;
 
     public ComerceFragment() {
     }
@@ -82,6 +91,15 @@ public class ComerceFragment extends Fragment {
         mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
         /* /Show/hide floating button*/
 
+        fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startFragment(new NewMessageFormFragment());
+                mListener.onFragmentInteraction(getString(R.string.new_message));
+            }
+        });
+
         /* Swipe down to refresh */
         final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
         sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -107,6 +125,15 @@ public class ComerceFragment extends Fragment {
         adapter.addAll(messages);
     }
 
+    private void startFragment(Fragment fragment) {
+        if (fragment != null){
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_main, fragment)
+                    .commit();
+        }
+    }
+
     private void showToast (String text){
         Toast.makeText(getContext(), text,Toast.LENGTH_SHORT).show();
     }
@@ -121,9 +148,9 @@ public class ComerceFragment extends Fragment {
 
 
     // TODO: Rename method, update argument and hook method into UI event
-    /*public void onButtonPressed(Uri uri) {
+    public void onButtonPressed(String title) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onFragmentInteraction(title);
         }
     }
 
@@ -142,7 +169,7 @@ public class ComerceFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }*/
+    }
 
     /**
      * This interface must be implemented by activities that contain this
@@ -154,37 +181,32 @@ public class ComerceFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    /*public interface OnFragmentInteractionListener {
+    public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }*/
+        void onFragmentInteraction(String title);
+    }
 
     private void initalizeData(){
         messages = new ArrayList<>();
-        messages.add(new Message("Title", "Description", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
-        messages.add(new Message("Title2", "Description2", R.drawable.ic_person_black_24dp));
+        Bitmap image = BitmapFactory
+                .decodeResource(getContext().getResources(), R.drawable.ic_person_black_24dp);
+        messages.add(new Message("Title", "Description", image));
 
+        MessagesSQLiteHelper msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
+        SQLiteDatabase db = msh.getReadableDatabase();
 
+        Cursor cursor = db.rawQuery("SELECT * from Messages", null);
+        if (cursor.moveToFirst()) {
+            do {
+                messages.add(new Message(cursor.getString(1),
+                        cursor.getString(2),
+                        byteArrayToBitmap(cursor.getBlob(3))));
+            } while (cursor.moveToNext());
+        }
 
+    }
 
-
-
+    private Bitmap byteArrayToBitmap (byte[] image) {
+        return BitmapFactory.decodeByteArray(image, 0, image.length);
     }
 }

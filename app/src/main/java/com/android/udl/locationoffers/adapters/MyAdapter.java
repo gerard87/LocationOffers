@@ -55,7 +55,7 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, final int position) {
         holder.title.setText(mDataset.get(position).getTitle());
         holder.description.setText(mDataset.get(position).getDescription());
-        holder.image.setImageResource(mDataset.get(position).getImageId());
+        holder.image.setImageBitmap(mDataset.get(position).getImage());
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

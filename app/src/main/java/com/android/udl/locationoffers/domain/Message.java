@@ -1,5 +1,7 @@
 package com.android.udl.locationoffers.domain;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by gerard on 07/03/17.
  */
@@ -7,12 +9,12 @@ package com.android.udl.locationoffers.domain;
 public class Message {
     private String title;
     private String description;
-    private int imageId;
+    private Bitmap image;
 
-    public Message(String title, String description, int imageId) {
+    public Message(String title, String description, Bitmap image) {
         this.title = title;
         this.description = description;
-        this.imageId = imageId;
+        this.image = image;
     }
 
     public String getTitle() {
@@ -31,12 +33,12 @@ public class Message {
         this.description = description;
     }
 
-    public int getImageId() {
-        return imageId;
+    public Bitmap getImage() {
+        return image;
     }
 
-    public void setImageId(int imageId) {
-        this.imageId = imageId;
+    public void setImage(Bitmap image) {
+        this.image = image;
     }
 
     @Override
@@ -44,7 +46,7 @@ public class Message {
         return "Message{" +
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", imageId=" + imageId +
+                ", image=" + image.toString() +
                 '}';
     }
 }

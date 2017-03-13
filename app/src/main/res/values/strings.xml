@@ -14,4 +14,11 @@
     <string name="title_activity_maps">Map</string>
 
     <string name="new_message">New message</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="image">Image</string>
+    <string name="accept">Accept</string>
+
+    <string name="message_db_ok">Message inserted successfully</string>
+    <string name="field_error">All fields are required</string>
 </resources>

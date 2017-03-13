@@ -11,10 +11,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MessagesSQLiteHelper extends SQLiteOpenHelper{
 
     String sqlCreate = "CREATE TABLE Messages " +
-            "(_id INTEGER PRIMARY KEY, " +
+            "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "title TEXT, " +
             "description TEXT, " +
-            "imageid INTEGER )";
+            "image BLOB)";
 
     public MessagesSQLiteHelper (Context context, String name,
                                  SQLiteDatabase.CursorFactory factory,

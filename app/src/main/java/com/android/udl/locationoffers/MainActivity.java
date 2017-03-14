@@ -1,6 +1,7 @@
 package com.android.udl.locationoffers;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -135,6 +136,11 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_help) {
 
+        } else if (id == R.id.nav_logout) {
+            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            finish();
+        } else if (id == R.id.nav_exit) {
+            finish();
         }
 
         startFragment(fragment);

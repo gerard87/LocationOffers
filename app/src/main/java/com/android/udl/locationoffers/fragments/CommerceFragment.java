@@ -1,10 +1,6 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,6 +14,7 @@ import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
+import com.android.udl.locationoffers.database.DatabaseUtilities;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
@@ -25,27 +22,19 @@ import com.android.udl.locationoffers.listeners.OnItemClickListener;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CommerceFragment extends Fragment {
 
-    private List<Message> messages;
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
     private FloatingActionButton fab_button;
 
+    private MessagesSQLiteHelper msh;
 
     private OnFragmentInteractionListener mListener;
 
     public CommerceFragment() {
-    }
-
-    public static CommerceFragment newInstance() {
-        CommerceFragment fragment = new CommerceFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
@@ -67,7 +56,10 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
-        initalizeData();
+
+        msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
+        DatabaseUtilities du = new DatabaseUtilities("Messages", msh);
+        List<Message> messages = du.getDataFromDB();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick());
         mRecyclerView.setAdapter(adapter);
 
@@ -82,7 +74,7 @@ public class CommerceFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startFragment(new NewMessageFormFragment());
-                mListener.onFABNewMessage(getString(R.string.new_message));
+                mListener.onFABNewMessageCommerce(getString(R.string.new_message));
             }
         });
 
@@ -107,8 +99,7 @@ public class CommerceFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        initalizeData();
-        adapter.addAll(messages);
+        adapter.addAll(new DatabaseUtilities("Messages", msh).getDataFromDB());
     }
 
     private void startFragment(Fragment fragment) {
@@ -150,30 +141,7 @@ public class CommerceFragment extends Fragment {
 
 
     public interface OnFragmentInteractionListener {
-        void onFABNewMessage(String title);
+        void onFABNewMessageCommerce(String title);
     }
 
-    private void initalizeData(){
-        messages = new ArrayList<>();
-        Bitmap image = BitmapFactory
-                .decodeResource(getContext().getResources(), R.drawable.ic_person_black_24dp);
-        messages.add(new Message("Title", "Description", image));
-
-        MessagesSQLiteHelper msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-        SQLiteDatabase db = msh.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * from Messages", null);
-        if (cursor.moveToFirst()) {
-            do {
-                messages.add(new Message(cursor.getString(1),
-                        cursor.getString(2),
-                        byteArrayToBitmap(cursor.getBlob(3))));
-            } while (cursor.moveToNext());
-        }
-
-    }
-
-    private Bitmap byteArrayToBitmap (byte[] image) {
-        return BitmapFactory.decodeByteArray(image, 0, image.length);
-    }
 }

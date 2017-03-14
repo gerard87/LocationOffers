@@ -121,19 +121,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         String title = getString(R.string.app_name);
 
-        if (id == R.id.nav_comerce) {
-            fragment = new CommerceFragment();
-            title = getString(R.string.commerce);
-        } else if (id == R.id.nav_user) {
-            fragment = new UserFragment();
-            title = getString(R.string.user);
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-
-
-        } else if (id == R.id.nav_commerce_list) {
+        if (id == R.id.nav_commerce_list) {
             fragment = new CommerceFragment();
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
@@ -141,22 +129,22 @@ public class MainActivity extends AppCompatActivity
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
 
-        } else if (id == R.id.nav_settings) {
-
-        } else if (id == R.id.nav_help) {
-
-        } else if (id == R.id.nav_logout) {
-            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-            finish();
-        } else if (id == R.id.nav_exit) {
-            finish();
         } else if (id == R.id.nav_user_list) {
             fragment = new UserFragment();
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_location) {
-        fragment = new LocationFragment();
-        title = "Location";
-    }
+            fragment = new LocationFragment();
+            title = "Location";
+        }else if (id == R.id.nav_settings) {
+
+        } else if (id == R.id.nav_help) {
+
+        } else if (id == R.id.nav_logout) {
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                finish();
+        } else if (id == R.id.nav_exit) {
+                finish();
+        }
 
         startFragment(fragment);
 
@@ -170,7 +158,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFABNewMessage(String title) {
+    public void onFABNewMessageCommerce(String title) {
+        fabAction(title);
+    }
+
+    private void fabAction (String title) {
         setTitle(title);
         checkItem(R.id.nav_commerce_new);
     }
@@ -192,4 +184,5 @@ public class MainActivity extends AppCompatActivity
             getSupportActionBar().setTitle(title);
         }
     }
+
 }

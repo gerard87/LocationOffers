@@ -1,4 +1,4 @@
-package com.android.udl.locationoffers;
+package com.android.udl.locationoffers.fragments;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 
 import java.io.ByteArrayOutputStream;

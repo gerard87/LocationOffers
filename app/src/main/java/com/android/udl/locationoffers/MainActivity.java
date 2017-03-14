@@ -16,6 +16,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.android.udl.locationoffers.fragments.ComerceFragment;
+import com.android.udl.locationoffers.fragments.LocationFragment;
+import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
+import com.android.udl.locationoffers.fragments.UserFragment;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ComerceFragment.OnFragmentInteractionListener,
@@ -48,9 +53,13 @@ public class MainActivity extends AppCompatActivity
 
         String mode = getIntent().getStringExtra("mode");
         if (mode.equals(getString(R.string.user))) {
+            navigationView.inflateMenu(R.menu.drawer_user);
+            navigationView.inflateMenu(R.menu.drawer);
             startFragment(new UserFragment());
+            setTitle(getString(R.string.messages));
         } else {
             navigationView.inflateMenu(R.menu.drawer_comerce);
+            navigationView.inflateMenu(R.menu.drawer);
             startFragment(new ComerceFragment());
             setTitle(getString(R.string.messages));
         }
@@ -141,7 +150,13 @@ public class MainActivity extends AppCompatActivity
             finish();
         } else if (id == R.id.nav_exit) {
             finish();
-        }
+        } else if (id == R.id.nav_user_list) {
+            fragment = new UserFragment();
+            title = getString(R.string.messages);
+        } else if (id == R.id.nav_user_location) {
+        fragment = new LocationFragment();
+        title = "Location";
+    }
 
         startFragment(fragment);
 

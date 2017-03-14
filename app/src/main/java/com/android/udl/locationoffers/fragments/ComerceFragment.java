@@ -1,11 +1,10 @@
-package com.android.udl.locationoffers;
+package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;

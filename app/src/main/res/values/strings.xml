@@ -6,7 +6,7 @@
 
     <string name="action_settings">Settings</string>
 
-    <string name="comerce">Comerce</string>
+    <string name="commerce">Commerce</string>
     <string name="user">User</string>
 
     <string name="hello_comerce_fragment">Hello comerce fragment</string>

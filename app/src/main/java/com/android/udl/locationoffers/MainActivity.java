@@ -16,14 +16,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.android.udl.locationoffers.fragments.ComerceFragment;
+import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        ComerceFragment.OnFragmentInteractionListener,
+        CommerceFragment.OnFragmentInteractionListener,
         NewMessageFormFragment.OnFragmentInteractionListener {
 
     private NavigationView navigationView;
@@ -58,9 +58,9 @@ public class MainActivity extends AppCompatActivity
             startFragment(new UserFragment());
             setTitle(getString(R.string.messages));
         } else {
-            navigationView.inflateMenu(R.menu.drawer_comerce);
+            navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
-            startFragment(new ComerceFragment());
+            startFragment(new CommerceFragment());
             setTitle(getString(R.string.messages));
         }
 
@@ -122,8 +122,8 @@ public class MainActivity extends AppCompatActivity
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_comerce) {
-            fragment = new ComerceFragment();
-            title = getString(R.string.comerce);
+            fragment = new CommerceFragment();
+            title = getString(R.string.commerce);
         } else if (id == R.id.nav_user) {
             fragment = new UserFragment();
             title = getString(R.string.user);
@@ -133,13 +133,13 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        } else if (id == R.id.nav_comerce_list) {
-            fragment = new ComerceFragment();
+        } else if (id == R.id.nav_commerce_list) {
+            fragment = new CommerceFragment();
             title = getString(R.string.messages);
-        } else if (id == R.id.nav_comerce_new) {
+        } else if (id == R.id.nav_commerce_new) {
             fragment = new NewMessageFormFragment();
             title = getString(R.string.new_message);
-        } else if (id == R.id.nav_comerce_trash) {
+        } else if (id == R.id.nav_commerce_trash) {
 
         } else if (id == R.id.nav_settings) {
 
@@ -172,13 +172,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onFABNewMessage(String title) {
         setTitle(title);
-        checkItem(R.id.nav_comerce_new);
+        checkItem(R.id.nav_commerce_new);
     }
 
     @Override
     public void onMessageAdded(String title) {
         setTitle(title);
-        checkItem(R.id.nav_comerce_list);
+        checkItem(R.id.nav_commerce_list);
     }
 
     private void checkItem (int id) {

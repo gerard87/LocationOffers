@@ -28,7 +28,7 @@ import com.github.clans.fab.FloatingActionMenu;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComerceFragment extends Fragment {
+public class CommerceFragment extends Fragment {
 
     private List<Message> messages;
     private RecyclerView mRecyclerView;
@@ -38,11 +38,11 @@ public class ComerceFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public ComerceFragment() {
+    public CommerceFragment() {
     }
 
-    public static ComerceFragment newInstance() {
-        ComerceFragment fragment = new ComerceFragment();
+    public static CommerceFragment newInstance() {
+        CommerceFragment fragment = new CommerceFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -56,7 +56,7 @@ public class ComerceFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_comerce, container, false);
+        return inflater.inflate(R.layout.fragment_commerce, container, false);
     }
 
     @Override

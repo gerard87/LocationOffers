@@ -29,8 +29,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (login(getString(R.string.user))) {
                     startModeActivity(getString(R.string.user));
-                } else if (login(getString(R.string.comerce))) {
-                    startModeActivity(getString(R.string.comerce));
+                } else if (login(getString(R.string.commerce))) {
+                    startModeActivity(getString(R.string.commerce));
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "Username or password invalid!", Toast.LENGTH_SHORT).show();

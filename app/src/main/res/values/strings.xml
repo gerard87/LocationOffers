@@ -21,4 +21,8 @@
 
     <string name="message_db_ok">Message inserted successfully</string>
     <string name="field_error">All fields are required</string>
+
+    <string name="messages">Messages</string>
+    <string name="trash">Trash</string>
+    <string name="help">Help</string>
 </resources>

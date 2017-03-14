@@ -42,6 +42,8 @@ public class NewMessageFormFragment extends Fragment {
 
     private MessagesSQLiteHelper msh;
 
+    private OnFragmentInteractionListener mListener;
+
     public NewMessageFormFragment() {
         // Required empty public constructor
     }
@@ -119,6 +121,7 @@ public class NewMessageFormFragment extends Fragment {
             Toast.makeText(getContext(), getString(R.string.message_db_ok), Toast.LENGTH_SHORT).show();
 
             startFragment(new ComerceFragment());
+            mListener.onMessageAdded(getString(R.string.messages));
 
         } else {
             Toast.makeText(getContext(), getString(R.string.field_error), Toast.LENGTH_SHORT).show();
@@ -183,5 +186,29 @@ public class NewMessageFormFragment extends Fragment {
                 }
         }
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onMessageAdded(String title);
+    }
+
+
 
 }

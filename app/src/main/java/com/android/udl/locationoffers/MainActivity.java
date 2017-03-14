@@ -13,9 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ComerceFragment.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        ComerceFragment.OnFragmentInteractionListener,
+        NewMessageFormFragment.OnFragmentInteractionListener {
+
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +35,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         if(ContextCompat.checkSelfPermission(this,
@@ -39,6 +44,21 @@ public class MainActivity extends AppCompatActivity
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     1);
         }
+
+        String mode = getIntent().getStringExtra("mode");
+        if (mode.equals(getString(R.string.user))) {
+            startFragment(new UserFragment());
+        } else {
+            navigationView.inflateMenu(R.menu.drawer_comerce);
+            startFragment(new ComerceFragment());
+            setTitle(getString(R.string.messages));
+        }
+
+        TextView tv = (TextView) navigationView.getHeaderView(0)
+                .findViewById(R.id.textView);
+        tv.setText(mode);
+
+
     }
 
     @Override
@@ -101,6 +121,20 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_send) {
 
+
+
+        } else if (id == R.id.nav_comerce_list) {
+            fragment = new ComerceFragment();
+            title = getString(R.string.messages);
+        } else if (id == R.id.nav_comerce_new) {
+            fragment = new NewMessageFormFragment();
+            title = getString(R.string.new_message);
+        } else if (id == R.id.nav_comerce_trash) {
+
+        } else if (id == R.id.nav_settings) {
+
+        } else if (id == R.id.nav_help) {
+
         }
 
         startFragment(fragment);
@@ -115,7 +149,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFragmentInteraction(String title) {
+    public void onFABNewMessage(String title) {
+        setTitle(title);
+        checkItem(R.id.nav_comerce_new);
+    }
+
+    @Override
+    public void onMessageAdded(String title) {
+        setTitle(title);
+        checkItem(R.id.nav_comerce_list);
+    }
+
+    private void checkItem (int id) {
+        if (navigationView != null) {
+            navigationView.setCheckedItem(id);
+        }
+    }
+
+    private void setTitle (String title) {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(title);
         }

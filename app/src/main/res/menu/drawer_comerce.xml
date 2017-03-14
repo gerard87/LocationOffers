@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_comerce_list"
+            android:icon="@drawable/ic_view_headline_black_24dp"
+            android:title="@string/messages"
+            android:checked="true"/>
+        <item
+            android:id="@+id/nav_comerce_new"
+            android:icon="@drawable/ic_note_add_black_24dp"
+            android:title="@string/new_message" />
+
+        <item
+            android:id="@+id/nav_comerce_trash"
+            android:icon="@drawable/ic_delete_black_24dp"
+            android:title="@string/trash" />
+
+    </group>
+
+    <group
+        android:checkableBehavior="none"
+        android:id="@+id/submenu">
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="@string/action_settings" />
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/ic_delete_black_24dp"
+                android:title="@string/help" />
+    </group>
+
+</menu>

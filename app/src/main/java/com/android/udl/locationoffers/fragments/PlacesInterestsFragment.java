@@ -179,7 +179,7 @@ public class PlacesInterestsFragment extends Fragment {
 
                         SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
-                        editor.putBoolean(cb.getText().toString(),cb.isChecked());
+                        editor.putBoolean(cb.getTag().toString(),cb.isChecked());
                         editor.commit();
                     }
                 });
@@ -189,10 +189,9 @@ public class PlacesInterestsFragment extends Fragment {
             }
 
             PlaceInterest interest = interestList.get(position);
-            //holder.code.setText(" (" +  country.getName() + ")");
-            holder.name.setText(interest.getName());
+            holder.name.setText(getResources().getIdentifier(interest.getName(),"string","com.android.udl.locationoffers"));
             holder.name.setChecked(interest.isSelected());
-            holder.name.setTag(interest);
+            holder.name.setTag(interest.getName());
 
             return convertView;
 

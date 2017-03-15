@@ -1,6 +1,7 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,16 +10,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.listeners.PlaceInterest;
+import com.android.udl.locationoffers.domain.PlaceInterest;
+import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 
 import java.util.ArrayList;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -173,6 +176,11 @@ public class PlacesInterestsFragment extends Fragment {
                                         " is " + cb.isChecked(),
                                 Toast.LENGTH_LONG).show();
                         interest.setSelected(cb.isChecked());
+
+                        SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putBoolean(cb.getText().toString(),cb.isChecked());
+                        editor.commit();
                     }
                 });
             }
@@ -194,11 +202,18 @@ public class PlacesInterestsFragment extends Fragment {
 
 
     private void displayListView(){
+        SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
         ArrayList<PlaceInterest> interestList = new ArrayList<PlaceInterest>();
-        PlaceInterest pi = new PlaceInterest("Hola", false);
+        /*PlaceInterest pi = new PlaceInterest("Hola", false);
         interestList.add(pi);
         pi = new PlaceInterest("Adeu",true);
-        interestList.add(pi);
+        interestList.add(pi);*/
+
+        PlaceInterest pi;
+        for(PlacesInterestEnum interest : PlacesInterestEnum.values()){
+            pi = new PlaceInterest(interest.toString(), pref.getBoolean(interest.toString(),true));
+            interestList.add(pi);
+        }
 
         dataAdapter = new PlaceInterestAdapter(myContext,R.layout.interest_place_layout,interestList);
         lv.setAdapter(dataAdapter);

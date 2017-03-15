@@ -1,4 +1,4 @@
-package com.android.udl.locationoffers.listeners;
+package com.android.udl.locationoffers.domain;
 
 /**
  * Created by ubuntu on 15/03/17.

@@ -26,9 +26,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-
-import java.io.ByteArrayOutputStream;
 
 
 public class NewMessageFormFragment extends Fragment {
@@ -109,7 +108,7 @@ public class NewMessageFormFragment extends Fragment {
     }
 
     private void saveToDatabase () {
-        byte[] image = bitmapToByteArray(bitmap);
+        byte[] image = BitmapUtils.bitmapToByteArray(bitmap);
         if (ed_title != null && ed_desc != null && image != null
                 && !ed_title.getText().toString().equals("")) {
             ContentValues data = new ContentValues();
@@ -153,14 +152,6 @@ public class NewMessageFormFragment extends Fragment {
 
     }
 
-    private byte[] bitmapToByteArray (Bitmap bitmap) {
-        if (bitmap != null) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            return stream.toByteArray();
-        }
-        return null;
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {

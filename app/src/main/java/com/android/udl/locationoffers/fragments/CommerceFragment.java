@@ -1,24 +1,29 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Fade;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.MessageDetailFragment;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.database.DatabaseUtilities;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
+import com.android.udl.locationoffers.listeners.ItemClick;
 import com.android.udl.locationoffers.listeners.OnItemClickListener;
+import com.android.udl.locationoffers.transitions.DetailsTransition;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
@@ -60,7 +65,7 @@ public class CommerceFragment extends Fragment {
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
         DatabaseUtilities du = new DatabaseUtilities("Messages", msh);
         List<Message> messages = du.getDataFromDB();
-        MyAdapter adapter = new MyAdapter(messages, new ItemClick());
+        MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
 
         /* Show/hide floating button*/
@@ -108,17 +113,6 @@ public class CommerceFragment extends Fragment {
                     .beginTransaction()
                     .replace(R.id.content_main, fragment)
                     .commit();
-        }
-    }
-
-    private void showToast (String text){
-        Toast.makeText(getContext(), text,Toast.LENGTH_SHORT).show();
-    }
-
-    private class ItemClick implements OnItemClickListener {
-        @Override
-        public void onItemClick(View view, int position){
-                showToast("Clicked element: "+Integer.toString(position));
         }
     }
 

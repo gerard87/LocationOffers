@@ -1,5 +1,6 @@
 package com.android.udl.locationoffers.adapters;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -57,6 +58,10 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.description.setText(mDataset.get(position).getDescription());
         holder.image.setImageBitmap(mDataset.get(position).getImage());
 
+        ViewCompat.setTransitionName(holder.image, String.valueOf(position)+"_image");
+        ViewCompat.setTransitionName(holder.title, String.valueOf(position)+"_title");
+        ViewCompat.setTransitionName(holder.description, String.valueOf(position)+"_desc");
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,11 +69,17 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             }
         });
 
+
+
     }
 
     @Override
     public int getItemCount() {
         return mDataset.size();
+    }
+
+    public Message getItem (int position) {
+        return mDataset.get(position);
     }
 
     public void removeAll(){

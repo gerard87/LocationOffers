@@ -2,9 +2,8 @@ package com.android.udl.locationoffers.database;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
 
 import java.util.ArrayList;
@@ -34,14 +33,11 @@ public class DatabaseUtilities {
             do {
                 messages.add(new Message(cursor.getString(1),
                         cursor.getString(2),
-                        byteArrayToBitmap(cursor.getBlob(3))));
+                        BitmapUtils.byteArrayToBitmap(cursor.getBlob(3))));
             } while (cursor.moveToNext());
         }
 
         return messages;
     }
 
-    private Bitmap byteArrayToBitmap (byte[] image) {
-        return BitmapFactory.decodeByteArray(image, 0, image.length);
-    }
 }

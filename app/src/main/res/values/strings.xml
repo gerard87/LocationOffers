@@ -89,11 +89,11 @@
     <string name="TYPE_LOCKSMITH">Serraller</string>
     <string name="TYPE_LODGING">Allotjament</string>
     <string name="TYPE_MEAL_DELIVERY">Lliurament de menjars</string>
-    <string name="TYPE_MEAL_TAKEAWAY">Menjar per emportar
+    <string name="TYPE_MEAL_TAKEAWAY">Menjar per emportar</string>
     <string name="TYPE_MOSQUE">Mesquita</string>
     <string name="TYPE_MOVIE_RENTAL">Lloguer de pel·lícules</string>
     <string name="TYPE_MOVIE_THEATER">Cinema</string>
-    <string name="TYPE_MOVING_COMPANY">Companyia mòbil</string>(moving company)</string>
+    <string name="TYPE_MOVING_COMPANY">Companyia mòbil(moving company)</string>
     <string name="TYPE_MUSEUM">Museu</string>
     <string name="TYPE_NIGHT_CLUB">Club de nit</string>
     <string name="TYPE_OTHER">Altres</string>

@@ -23,6 +23,8 @@ public class LoginActivity extends AppCompatActivity {
         et_pass = (EditText) findViewById(R.id.editText_login_pass);
 
         Button btn = (Button) findViewById(R.id.button_login);
+        Button btn_reg = (Button) findViewById(R.id.button_register);
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -36,6 +38,14 @@ public class LoginActivity extends AppCompatActivity {
                             "Username or password invalid!", Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        });
+
+        btn_reg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RegisterCommerceActivity.class);
+                startActivity(intent);
             }
         });
     }

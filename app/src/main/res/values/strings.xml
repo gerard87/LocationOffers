@@ -14,6 +14,7 @@
     <string name="title_activity_maps">Map</string>
 
     <string name="new_message">New message</string>
+    <string name="edit_message">Edit message</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="image">Image</string>

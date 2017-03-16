@@ -11,20 +11,28 @@ import com.android.udl.locationoffers.Utils.BitmapUtils;
  */
 
 public class Message implements Parcelable{
+
+    private int id;
     private String title;
     private String description;
     private Bitmap image;
+    private int commerce_id;
 
-    public Message(String title, String description, Bitmap image) {
+
+    public Message(int id, String title, String description, Bitmap image, int commerce_id) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.image = image;
+        this.commerce_id = commerce_id;
     }
 
     protected Message(Parcel in) {
+        id = in.readInt();
         title = in.readString();
         description = in.readString();
         image = in.readParcelable(Bitmap.class.getClassLoader());
+        commerce_id = in.readInt();
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {
@@ -63,12 +71,30 @@ public class Message implements Parcelable{
         this.image = image;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCommerce_id() {
+        return commerce_id;
+    }
+
+    public void setCommerce_id(int commerce_id) {
+        this.commerce_id = commerce_id;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
-                "title='" + title + '\'' +
+                "id=" + id +
+                ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", image=" + image.toString() +
+                ", image=" + image +
+                ", commerce_id=" + commerce_id +
                 '}';
     }
 

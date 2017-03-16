@@ -1,6 +1,5 @@
 package com.android.udl.locationoffers.listeners;
 
-import android.app.Activity;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -8,7 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.transition.Fade;
 import android.view.View;
 
-import com.android.udl.locationoffers.MessageDetailFragment;
+import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.transitions.DetailsTransition;

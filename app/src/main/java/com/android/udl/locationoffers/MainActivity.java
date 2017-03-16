@@ -18,13 +18,15 @@ import android.widget.TextView;
 
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
+import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         CommerceFragment.OnFragmentInteractionListener,
-        NewMessageFormFragment.OnFragmentInteractionListener {
+        NewMessageFormFragment.OnFragmentInteractionListener,
+        MessageDetailFragment.OnFragmentInteractionListener {
 
     private NavigationView navigationView;
 
@@ -185,4 +187,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onEditMessageDetail(String title) {
+        setTitle(title);
+        checkItem(R.id.nav_commerce_new);
+    }
 }

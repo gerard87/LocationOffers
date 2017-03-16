@@ -5,20 +5,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by gerard on 13/03/17.
+ * Created by gerard on 16/03/17.
  */
 
-public class MessagesSQLiteHelper extends SQLiteOpenHelper{
+public class CommerceSQLiteHelper extends SQLiteOpenHelper {
 
-    String sqlCreate = "CREATE TABLE Messages " +
+    String sqlCreate = "CREATE TABLE Commerces " +
             "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "title TEXT, " +
-            "description TEXT, " +
-            "image BLOB, " +
-            "commerce_id INTEGER, " +
-            "FOREIGN KEY (commerce_id) REFERENCES Commerces(_id));";
+            "name TEXT, " +
+            "password TEXT, " +
+            "image BLOB)";
 
-    public MessagesSQLiteHelper (Context context, String name,
+    public CommerceSQLiteHelper (Context context, String name,
                                  SQLiteDatabase.CursorFactory factory,
                                  int version) {
         super(context, name, factory, version);
@@ -31,7 +29,7 @@ public class MessagesSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS Messages");
+        db.execSQL("DROP TABLE IF EXISTS Commerces");
         db.execSQL(sqlCreate);
     }
 }

@@ -46,6 +46,11 @@
             android:inputType="textPassword" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
         <Button
             android:id="@+id/button_login"
             android:layout_width="wrap_content"
@@ -53,6 +58,15 @@
             android:text="Log in"
             android:layout_marginTop="10dp"/>
 
+        <Button
+            android:id="@+id/button_register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:layout_marginTop="10dp"/>
+
+
+    </LinearLayout>
 
     </LinearLayout>
 

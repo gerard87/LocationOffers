@@ -22,25 +22,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
+import com.android.udl.locationoffers.database.CommerceSQLiteHelper;
+import com.android.udl.locationoffers.database.DatabaseUtilities;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
+import com.android.udl.locationoffers.domain.Commerce;
+import com.android.udl.locationoffers.domain.Message;
 
 
 public class NewMessageFormFragment extends Fragment {
 
-    private static final int PICK_IMAGE = 1;
-    private static final int PERMISSION_EXTERNAL_STORAGE = 1;
-
-    private Button btn_img, btn_ok;
+    private Button btn_ok;
     private EditText ed_title, ed_desc;
-    private ImageView imageView;
-    private Bitmap bitmap;
+    private int id;
+
+    private boolean update = false;
 
     private MessagesSQLiteHelper msh;
+    private CommerceSQLiteHelper csh;
 
     private OnFragmentInteractionListener mListener;
 
@@ -48,10 +50,10 @@ public class NewMessageFormFragment extends Fragment {
         // Required empty public constructor
     }
 
-    // TODO: Rename and change types and number of parameters
-    public static NewMessageFormFragment newInstance() {
+    public static NewMessageFormFragment newInstance(Message message) {
         NewMessageFormFragment fragment = new NewMessageFormFragment();
         Bundle args = new Bundle();
+        args.putParcelable("message", message);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,6 +61,7 @@ public class NewMessageFormFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -69,35 +72,27 @@ public class NewMessageFormFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        msh = new MessagesSQLiteHelper(getContext(), "DBMessages", null, 1);
+        msh = new MessagesSQLiteHelper(view.getContext(), "DBMessages", null, 1);
+        csh = new CommerceSQLiteHelper(view.getContext(), "DBCommerces", null, 1);
 
-        btn_img = (Button) getView().findViewById(R.id.button_form_image);
-        btn_ok = (Button) getView().findViewById(R.id.button_form_ok);
-        ed_title = (EditText) getView().findViewById(R.id.editText_form_title);
-        ed_desc = (EditText) getView().findViewById(R.id.editText_form_description);
-        imageView = (ImageView) getView().findViewById(R.id.image_form);
+        btn_ok = (Button) view.findViewById(R.id.button_form_ok);
+        ed_title = (EditText) view.findViewById(R.id.editText_form_title);
+        ed_desc = (EditText) view.findViewById(R.id.editText_form_description);
+
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("message")) {
+            Message message = args.getParcelable("message");
+            ed_title.setText(message.getTitle());
+            ed_desc.setText(message.getDescription());
+            id = message.getId();
+            update = true;
+        }
 
 
-        btn_img.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(ContextCompat.checkSelfPermission(getContext(),
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE) ==
-                        PackageManager.PERMISSION_DENIED) {
-                    requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
-                            PERMISSION_EXTERNAL_STORAGE);
-                } else {
-                    Intent pickIntent = new Intent(Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    pickIntent.setType("image/*");
-                    startActivityForResult(pickIntent, PICK_IMAGE);
-                }
 
-            }
-        });
 
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,18 +102,25 @@ public class NewMessageFormFragment extends Fragment {
         });
     }
 
+
     private void saveToDatabase () {
-        byte[] image = BitmapUtils.bitmapToByteArray(bitmap);
-        if (ed_title != null && ed_desc != null && image != null
-                && !ed_title.getText().toString().equals("")) {
+
+        if (ed_title != null && ed_desc != null
+                && !ed_title.getText().toString().equals("")
+                && !ed_desc.toString().equals("")) {
             ContentValues data = new ContentValues();
             data.put("title", ed_title.getText().toString());
             data.put("description", ed_desc.getText().toString());
-            data.put("image", image);
 
-            save (data);
+            if (update) {
+                update (data);
+            } else {
+                save(data);
+            }
+
 
             Toast.makeText(getContext(), getString(R.string.message_db_ok), Toast.LENGTH_SHORT).show();
+
 
             startFragment(new CommerceFragment());
             mListener.onMessageAdded(getString(R.string.messages));
@@ -141,6 +143,14 @@ public class NewMessageFormFragment extends Fragment {
 
     private void save (final ContentValues data) {
 
+        DatabaseUtilities du = new DatabaseUtilities("Commerces",csh);
+        /* ARREGLAR */
+        Commerce commerce = du.getCommerceDataFromDB().get(0);
+
+        data.put("image", BitmapUtils.bitmapToByteArray(commerce.getImage()));
+        data.put("commerce_id", commerce.getId());
+
+
         AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -152,32 +162,21 @@ public class NewMessageFormFragment extends Fragment {
 
     }
 
+    private void update (final ContentValues data) {
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                SQLiteDatabase db = msh.getWritableDatabase();
+                db.update("Messages", data, "_id = ?", new String[]{Integer.toString(id)});
+                return null;
+            }
+        });
 
-        switch(requestCode) {
-            case PICK_IMAGE:
-                if(resultCode == Activity.RESULT_OK){
-                    Uri selectedImage = imageReturnedIntent.getData();
-                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-                    Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
-
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String filePath = cursor.getString(columnIndex);
-                    cursor.close();
-
-
-                    bitmap = BitmapFactory.decodeFile(filePath);
-
-                    imageView.setImageBitmap(bitmap);
-
-                }
-        }
     }
+
+
+
 
     @Override
     public void onAttach(Context context) {
@@ -197,7 +196,6 @@ public class NewMessageFormFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onMessageAdded(String title);
     }
 

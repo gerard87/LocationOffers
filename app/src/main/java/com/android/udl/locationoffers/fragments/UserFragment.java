@@ -52,7 +52,7 @@ public class UserFragment extends Fragment {
 
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
         DatabaseUtilities du = new DatabaseUtilities("Messages", msh);
-        List<Message> messages = du.getDataFromDB();
+        List<Message> messages = du.getMessageDataFromDB();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
 
@@ -77,7 +77,7 @@ public class UserFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        adapter.addAll(new DatabaseUtilities("Messages", msh).getDataFromDB());
+        adapter.addAll(new DatabaseUtilities("Messages", msh).getMessageDataFromDB());
     }
 
 }

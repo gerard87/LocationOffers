@@ -1,20 +1,16 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.Fade;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.android.udl.locationoffers.MessageDetailFragment;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.database.DatabaseUtilities;
@@ -22,8 +18,6 @@ import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.ItemClick;
-import com.android.udl.locationoffers.listeners.OnItemClickListener;
-import com.android.udl.locationoffers.transitions.DetailsTransition;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
@@ -64,7 +58,7 @@ public class CommerceFragment extends Fragment {
 
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
         DatabaseUtilities du = new DatabaseUtilities("Messages", msh);
-        List<Message> messages = du.getDataFromDB();
+        List<Message> messages = du.getMessageDataFromDB();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
 
@@ -104,7 +98,7 @@ public class CommerceFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        adapter.addAll(new DatabaseUtilities("Messages", msh).getDataFromDB());
+        adapter.addAll(new DatabaseUtilities("Messages", msh).getMessageDataFromDB());
     }
 
     private void startFragment(Fragment fragment) {
@@ -112,6 +106,7 @@ public class CommerceFragment extends Fragment {
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.content_main, fragment)
+                    .addToBackStack(null)
                     .commit();
         }
     }

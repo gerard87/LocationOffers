@@ -8,6 +8,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.database.CommerceSQLiteHelper;
+import com.android.udl.locationoffers.database.DatabaseUtilities;
+import com.android.udl.locationoffers.domain.Commerce;
+
+import java.util.List;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText et_user, et_pass;
@@ -31,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (login(getString(R.string.user))) {
                     startModeActivity(getString(R.string.user));
-                } else if (login(getString(R.string.commerce))) {
+                } else if (loginCommerce()) {
                     startModeActivity(getString(R.string.commerce));
                 } else {
                     Toast.makeText(getApplicationContext(),
@@ -52,6 +58,21 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean login (String s) {
         return et_user.getText().toString().equals(s); //&& et_pass.getText().toString().equals(s);
+    }
+
+    private boolean loginCommerce () {
+
+        CommerceSQLiteHelper csh =
+                new CommerceSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
+        DatabaseUtilities databaseUtilities = new DatabaseUtilities("Commerces", csh);
+        List<Commerce> commerces = databaseUtilities.getCommerceDataFromDB();
+        for (Commerce commerce: commerces) {
+            if (commerce.getName().equals(et_user.getText().toString()) &&
+                    commerce.getPassword().equals(et_pass.getText().toString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void startModeActivity (String s) {

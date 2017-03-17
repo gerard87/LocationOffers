@@ -2,7 +2,9 @@ package com.android.udl.locationoffers;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -34,6 +36,8 @@ public class RegisterCommerceActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private Button btn_img, btn_ok;
     private CommerceSQLiteHelper csh;
+    private SharedPreferences sharedPreferences;
+    private long id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,8 @@ public class RegisterCommerceActivity extends AppCompatActivity {
         btn_img = (Button) findViewById(R.id.button_form_image);
         btn_ok = (Button) findViewById(R.id.button_register_ok);
         imageView = (ImageView) findViewById(R.id.image_form);
+
+        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
         btn_img.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,7 +96,8 @@ public class RegisterCommerceActivity extends AppCompatActivity {
 
             Toast.makeText(getApplicationContext(), "Registered succesfully", Toast.LENGTH_SHORT).show();
 
-            startModeActivity("Commerce");
+            saveToSharedPreferencesAndStart((int)id, et_name.getText().toString(),
+                    getString(R.string.commerce));
 
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.field_error), Toast.LENGTH_SHORT).show();
@@ -104,7 +111,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... params) {
                 SQLiteDatabase db = csh.getWritableDatabase();
-                db.insert("Commerces", null, data);
+                id = db.insert("Commerces", null, data);
                 return null;
             }
         });
@@ -137,10 +144,14 @@ public class RegisterCommerceActivity extends AppCompatActivity {
         }
     }
 
-    private void startModeActivity (String s) {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.putExtra("mode", s);
-        startActivity(intent);
+    private void saveToSharedPreferencesAndStart (int id, String name, String mode) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("id", id);
+        editor.putString("user", name);
+        editor.putString("mode", mode);
+        editor.apply();
+
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
         finish();
     }
 }

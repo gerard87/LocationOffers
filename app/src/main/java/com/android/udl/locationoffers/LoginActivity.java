@@ -1,6 +1,8 @@
 package com.android.udl.locationoffers;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +19,8 @@ import java.util.List;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText et_user, et_pass;
+    private SharedPreferences sharedPreferences;
+    private Commerce commerce;
 
 
 
@@ -31,14 +35,19 @@ public class LoginActivity extends AppCompatActivity {
         Button btn = (Button) findViewById(R.id.button_login);
         Button btn_reg = (Button) findViewById(R.id.button_register);
 
+        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if (login(getString(R.string.user))) {
-                    startModeActivity(getString(R.string.user));
+                    saveToSharedPreferencesAndStart(1,"", getString(R.string.user));
+
                 } else if (loginCommerce()) {
-                    startModeActivity(getString(R.string.commerce));
+                    saveToSharedPreferencesAndStart(commerce.getId(),
+                            commerce.getName(), getString(R.string.commerce));
+
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "Username or password invalid!", Toast.LENGTH_SHORT).show();
@@ -69,16 +78,21 @@ public class LoginActivity extends AppCompatActivity {
         for (Commerce commerce: commerces) {
             if (commerce.getName().equals(et_user.getText().toString()) &&
                     commerce.getPassword().equals(et_pass.getText().toString())) {
+                this.commerce = commerce;
                 return true;
             }
         }
         return false;
     }
 
-    private void startModeActivity (String s) {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.putExtra("mode", s);
-        startActivity(intent);
+    private void saveToSharedPreferencesAndStart (int id, String name, String mode) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("id", id);
+        editor.putString("user", name);
+        editor.putString("mode", mode);
+        editor.apply();
+
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
         finish();
     }
 

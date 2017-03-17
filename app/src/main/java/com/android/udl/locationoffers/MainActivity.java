@@ -1,7 +1,9 @@
 package com.android.udl.locationoffers;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity
         MessageDetailFragment.OnFragmentInteractionListener {
 
     private NavigationView navigationView;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -53,7 +58,7 @@ public class MainActivity extends AppCompatActivity
                     1);
         }
 
-        String mode = getIntent().getStringExtra("mode");
+        String mode = sharedPreferences.getString("mode", null);
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
@@ -68,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
         TextView tv = (TextView) navigationView.getHeaderView(0)
                 .findViewById(R.id.textView);
-        tv.setText(mode);
+        tv.setText(sharedPreferences.getString("user", null));
 
 
     }

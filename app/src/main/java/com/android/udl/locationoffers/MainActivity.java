@@ -22,6 +22,7 @@ import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
+import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -151,6 +152,9 @@ public class MainActivity extends AppCompatActivity
                 finish();
         } else if (id == R.id.nav_exit) {
                 finish();
+        } else if (id == R.id.nav_user_selectInterests){
+                fragment = new PlacesInterestsFragment();
+                title = "Select Interests";
         }
 
         startFragment(fragment);

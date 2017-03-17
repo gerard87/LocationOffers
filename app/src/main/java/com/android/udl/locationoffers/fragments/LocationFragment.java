@@ -1,5 +1,6 @@
 package com.android.udl.locationoffers.fragments;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -16,6 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.domain.PlaceInterest;
+import com.android.udl.locationoffers.domain.PlacesInterestEnum;
+import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,9 +28,16 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class LocationFragment extends Fragment  implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks, LocationListener {
@@ -37,6 +48,8 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
     private static int FASTEST_INTERVAL = 500;
     private static int DISPLACEMENT = 1;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+
+    ArrayList<Integer> interestList;
 
     private Button btn1;
     private TextView tv1;
@@ -62,6 +75,15 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
             createLocationRequest();
         }
 
+        SharedPreferences pref = getContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        interestList = new ArrayList<>();
+
+        for(PlacesInterestEnum interest : PlacesInterestEnum.values()){
+            if(pref.getBoolean(interest.toString(),true)){
+                interestList.add(PlacesInterestEnumTranslator.translate(interest.toString()));
+            }
+        }
+
     }
 
     @Override
@@ -80,11 +102,13 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
                 String allPlaces = "";
                 for (PlaceLikelihood placeLikelihood : likelyPlaces) {
                     Log.i("CALLPLACEDETECTIONAPI", String.format("Place '%s' with " +
-                                    "likelihood: %g",
+                                    "likelihood: %g, TYPE: '%s'",
                             placeLikelihood.getPlace().getName(),
-                            placeLikelihood.getLikelihood()));
+                            placeLikelihood.getLikelihood(),placeLikelihood.getPlace().getPlaceTypes().toString()));
 
-                    allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
+                    if(!Collections.disjoint(placeLikelihood.getPlace().getPlaceTypes(),(interestList))){
+                        allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
+                    }
                 }
 
                 likelyPlaces.release();

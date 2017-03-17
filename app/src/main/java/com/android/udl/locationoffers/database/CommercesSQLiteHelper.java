@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by gerard on 16/03/17.
  */
 
-public class CommerceSQLiteHelper extends SQLiteOpenHelper {
+public class CommercesSQLiteHelper extends SQLiteOpenHelper {
 
     String sqlCreate = "CREATE TABLE Commerces " +
             "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -16,7 +16,7 @@ public class CommerceSQLiteHelper extends SQLiteOpenHelper {
             "password TEXT, " +
             "image BLOB)";
 
-    public CommerceSQLiteHelper (Context context, String name,
+    public CommercesSQLiteHelper(Context context, String name,
                                  SQLiteDatabase.CursorFactory factory,
                                  int version) {
         super(context, name, factory, version);

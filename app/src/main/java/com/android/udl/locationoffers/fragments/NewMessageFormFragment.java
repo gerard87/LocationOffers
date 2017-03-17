@@ -1,22 +1,15 @@
 package com.android.udl.locationoffers.fragments;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +19,14 @@ import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.database.CommerceSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseUtilities;
+import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
+import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.domain.Message;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 public class NewMessageFormFragment extends Fragment {
@@ -38,11 +34,14 @@ public class NewMessageFormFragment extends Fragment {
     private Button btn_ok;
     private EditText ed_title, ed_desc;
     private int id;
+    private Commerce commerce;
 
     private boolean update = false;
 
+    private SharedPreferences sharedPreferences;
+
     private MessagesSQLiteHelper msh;
-    private CommerceSQLiteHelper csh;
+    private CommercesSQLiteHelper csh;
 
     private OnFragmentInteractionListener mListener;
 
@@ -76,7 +75,9 @@ public class NewMessageFormFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         msh = new MessagesSQLiteHelper(view.getContext(), "DBMessages", null, 1);
-        csh = new CommerceSQLiteHelper(view.getContext(), "DBCommerces", null, 1);
+        csh = new CommercesSQLiteHelper(view.getContext(), "DBCommerces", null, 1);
+
+        sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
         btn_ok = (Button) view.findViewById(R.id.button_form_ok);
         ed_title = (EditText) view.findViewById(R.id.editText_form_title);
@@ -143,13 +144,21 @@ public class NewMessageFormFragment extends Fragment {
 
     private void save (final ContentValues data) {
 
-        DatabaseUtilities du = new DatabaseUtilities("Commerces",csh);
-        /* ARREGLAR */
-        Commerce commerce = du.getCommerceDataFromDB().get(0);
+        DatabaseQueries du = new DatabaseQueries("Commerces",csh);
 
-        data.put("image", BitmapUtils.bitmapToByteArray(commerce.getImage()));
-        data.put("commerce_id", commerce.getId());
+        List<String> fields = Arrays.asList("_id");
+        List<String> values = Arrays.asList(Integer.toString(sharedPreferences.getInt("id", -1)));
 
+        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values);
+
+        Log.i("AAAAAAA", Integer.toString(commerces.size()));
+
+        if (commerces != null && commerces.size() > 0) {
+            commerce = commerces.get(0);
+
+            data.put("image", BitmapUtils.bitmapToByteArray(commerce.getImage()));
+            data.put("commerce_id", commerce.getId());
+        }
 
         AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
             @Override

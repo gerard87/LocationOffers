@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
-import com.android.udl.locationoffers.database.DatabaseUtilities;
+import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
@@ -57,7 +57,7 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setLayoutManager(llm);
 
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-        DatabaseUtilities du = new DatabaseUtilities("Messages", msh);
+        DatabaseQueries du = new DatabaseQueries("Messages", msh);
         List<Message> messages = du.getMessageDataFromDB();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
@@ -98,7 +98,7 @@ public class CommerceFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        adapter.addAll(new DatabaseUtilities("Messages", msh).getMessageDataFromDB());
+        adapter.addAll(new DatabaseQueries("Messages", msh).getMessageDataFromDB());
     }
 
     private void startFragment(Fragment fragment) {

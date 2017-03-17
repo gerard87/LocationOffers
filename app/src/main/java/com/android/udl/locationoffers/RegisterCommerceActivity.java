@@ -24,7 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.database.CommerceSQLiteHelper;
+import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
 
 public class RegisterCommerceActivity extends AppCompatActivity {
 
@@ -35,7 +35,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
     private EditText et_name, et_pass;
     private Bitmap bitmap;
     private Button btn_img, btn_ok;
-    private CommerceSQLiteHelper csh;
+    private CommercesSQLiteHelper csh;
     private SharedPreferences sharedPreferences;
     private long id;
 
@@ -44,7 +44,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_commerce);
 
-        csh = new CommerceSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
+        csh = new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
 
         et_name = (EditText) findViewById(R.id.editText_register_name);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
@@ -106,16 +106,8 @@ public class RegisterCommerceActivity extends AppCompatActivity {
     }
 
     private void save (final ContentValues data) {
-
-        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                SQLiteDatabase db = csh.getWritableDatabase();
-                id = db.insert("Commerces", null, data);
-                return null;
-            }
-        });
-
+        SQLiteDatabase db = csh.getWritableDatabase();
+        id = db.insert("Commerces", null, data);
     }
 
     @Override

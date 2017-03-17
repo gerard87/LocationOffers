@@ -10,10 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.udl.locationoffers.database.CommerceSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseUtilities;
+import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
+import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.domain.Commerce;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
@@ -71,14 +72,19 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean loginCommerce () {
 
-        CommerceSQLiteHelper csh =
-                new CommerceSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
-        DatabaseUtilities databaseUtilities = new DatabaseUtilities("Commerces", csh);
-        List<Commerce> commerces = databaseUtilities.getCommerceDataFromDB();
-        for (Commerce commerce: commerces) {
-            if (commerce.getName().equals(et_user.getText().toString()) &&
-                    commerce.getPassword().equals(et_pass.getText().toString())) {
-                this.commerce = commerce;
+        CommercesSQLiteHelper csh =
+                new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
+        DatabaseQueries databaseQueries = new DatabaseQueries("Commerces", csh);
+
+        String name = et_user.getText().toString();
+        String password = et_pass.getText().toString();
+
+        if (!name.equals("") && !password.equals("")) {
+            List<String> fields = Arrays.asList("name","password");
+            List<String> values = Arrays.asList(name, password);
+            List<Commerce> commerces = databaseQueries.getCommerceDataByFieldsFromDB(fields, values);
+            if (commerces != null && commerces.size() > 0) {
+                this.commerce = commerces.get(0);
                 return true;
             }
         }

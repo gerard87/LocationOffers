@@ -148,13 +148,16 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_help) {
 
         } else if (id == R.id.nav_logout) {
-                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-                finish();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
+            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            finish();
         } else if (id == R.id.nav_exit) {
-                finish();
+            finish();
         } else if (id == R.id.nav_user_selectInterests){
-                fragment = new PlacesInterestsFragment();
-                title = "Select Interests";
+            fragment = new PlacesInterestsFragment();
+            title = "Select Interests";
         }
 
         startFragment(fragment);

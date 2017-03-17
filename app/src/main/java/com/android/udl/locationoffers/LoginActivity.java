@@ -38,6 +38,17 @@ public class LoginActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
+        if (sharedPreferences.contains("id")
+                && sharedPreferences.contains("user")
+                && sharedPreferences.contains("mode")) {
+            Toast.makeText(getApplicationContext(),
+                    "Welcome " + sharedPreferences.getString("user", null),
+                    Toast.LENGTH_SHORT).show();
+
+            start();
+
+        }
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,6 +109,11 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("mode", mode);
         editor.apply();
 
+        start();
+
+    }
+
+    private void start () {
         startActivity(new Intent(getApplicationContext(), MainActivity.class));
         finish();
     }

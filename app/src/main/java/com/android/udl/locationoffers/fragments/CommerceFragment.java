@@ -1,6 +1,8 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,6 +23,7 @@ import com.android.udl.locationoffers.listeners.ItemClick;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class CommerceFragment extends Fragment {
@@ -32,6 +35,8 @@ public class CommerceFragment extends Fragment {
     private MessagesSQLiteHelper msh;
 
     private OnFragmentInteractionListener mListener;
+
+    private SharedPreferences sharedPreferences;
 
     public CommerceFragment() {
     }
@@ -51,6 +56,8 @@ public class CommerceFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+
         mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
         mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
@@ -58,7 +65,17 @@ public class CommerceFragment extends Fragment {
 
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
         DatabaseQueries du = new DatabaseQueries("Messages", msh);
-        List<Message> messages = du.getMessageDataFromDB();
+
+        List<Message> messages;
+        if (sharedPreferences.getString("mode", null).equals(getString(R.string.user))){
+            messages = du.getMessageDataFromDB();
+        } else {
+            List<String> fields = Arrays.asList("commerce_id");
+            List<String> values = Arrays.asList(
+                    Integer.toString(sharedPreferences.getInt("id", -1)));
+            messages = du.getMessageDataByFieldsFromDB(fields, values);
+        }
+
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
 

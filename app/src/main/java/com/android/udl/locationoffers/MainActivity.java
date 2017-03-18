@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
@@ -130,6 +131,10 @@ public class MainActivity extends AppCompatActivity
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
 
+        } else if (id == R.id.nav_commerce_scanQR) {
+            Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+            startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
             fragment = new UserFragment();
             title = getString(R.string.messages);
@@ -159,6 +164,20 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                String contents = intent.getStringExtra("SCAN_RESULT");
+                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+                Toast.makeText(this,contents,Toast.LENGTH_LONG).show();
+                // Handle successful scan
+            } else if (resultCode == RESULT_CANCELED) {
+                // Handle cancel
+            }
+        }
     }
 
     @Override

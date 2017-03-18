@@ -185,6 +185,11 @@ public class MainActivity extends AppCompatActivity
             CommerceFragment commerceFragment = CommerceFragment.newInstance("removed");
             startFragment(commerceFragment, TAG_COMMERCE);
             title = "Trash";
+
+        } else if (id == R.id.nav_commerce_scanQR) {
+            Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+            startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
             startFragment(new UserFragment(), TAG_USER);
             title = getString(R.string.messages);
@@ -208,6 +213,7 @@ public class MainActivity extends AppCompatActivity
             title = "Select Interests";
         }
 
+        startFragment(fragment);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(title);
@@ -216,6 +222,20 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                String contents = intent.getStringExtra("SCAN_RESULT");
+                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+                Toast.makeText(this,contents,Toast.LENGTH_LONG).show();
+                // Handle successful scan
+            } else if (resultCode == RESULT_CANCELED) {
+                // Handle cancel
+            }
+        }
     }
 
     @Override

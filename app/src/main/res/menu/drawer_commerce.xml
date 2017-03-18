@@ -17,6 +17,11 @@
             android:icon="@drawable/ic_delete_black_24dp"
             android:title="@string/trash" />
 
+        <item
+            android:id="@+id/nav_commerce_scanQR"
+            android:icon="@drawable/ic_delete_black_24dp"
+            android:title="ScanQR" />
+
     </group>
 
 </menu>

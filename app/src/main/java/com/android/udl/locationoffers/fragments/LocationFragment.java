@@ -1,8 +1,14 @@
 package com.android.udl.locationoffers.fragments;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +22,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.LocationChangedReceiver;
+import com.android.udl.locationoffers.Manifest;
+import com.android.udl.locationoffers.NotificationService;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.PlaceInterest;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
@@ -27,6 +36,7 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceLikelihood;
@@ -50,6 +60,10 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     ArrayList<Integer> interestList;
+
+    LocationChangedReceiver locationReceiver;
+    private PendingIntent locationPendingIntent;
+    private Location mLastLocation;
 
     private Button btn1;
     private TextView tv1;
@@ -110,6 +124,7 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
                         allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
                     }
                 }
+                Toast.makeText(getActivity(),"BROADCAST:Location changed!!!!",Toast.LENGTH_SHORT).show();
 
                 likelyPlaces.release();
                 Log.i("CALLPLACEDETECTIONAPI:","text view modificat");
@@ -123,16 +138,34 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
         tv1 = (TextView) getView().findViewById(R.id.tvPlacesList);
 
         btn1 = (Button) getView().findViewById(R.id.button2);
-        btn1.setText("START LOCATION UPDATES");
+        btn1.setText("START LOCATION SERVICE");
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                togglePeriodicLocationUpdates();
+                //togglePeriodicLocationUpdates();
+                Intent serviceIntent = new Intent(getActivity(), NotificationService.class);
+                getActivity().startService(serviceIntent);
+                btn1.setText("STOP LOCATION SERVICE");
             }
         });
+
+        /*IntentFilter i = new IntentFilter();
+        i.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        i.addAction("android.net.wifi.STATE_CHANGE");
+        locationReceiver = new LocationChangedReceiver();
+        getActivity().registerReceiver(locationReceiver, i);*/
+
+        /*Intent locationIntent = new Intent(getContext(),
+                LocationChangedReceiver.class);
+        locationPendingIntent = PendingIntent.getBroadcast(
+                getContext(), 0, locationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        /*LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, locationPendingIntent);*/
+        //startLocationUpdates();*/
     }
 
-    @Override
+
+        @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i("ON CONNECTION FAILED","Google Places API connection failed with error code:");
     }
@@ -151,6 +184,28 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
             mGoogleApiClient.disconnect();
         }
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(locationReceiver != null){
+            getContext().unregisterReceiver(locationReceiver);
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (checkPlayServices()) {
+
+            // Resuming the periodic location updates
+            if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+                startLocationIntentUpdates();
+            }
+        }
     }
 
     protected void buildGoogleApiClient() {
@@ -189,9 +244,13 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
     public void onConnected(@Nullable Bundle bundle) {
         //cuan esta conectat amb la api, per tant es on s'ha de cridar lo que actualitzi
         callPlaceDetectionApi();
+        //startLocationIntentUpdates();
 
-        if (mRequestingLocationUpdates)
-            startLocationUpdates();
+        if (mRequestingLocationUpdates){
+            startLocationIntentUpdates();
+
+        }
+
     }
 
     @Override
@@ -215,6 +274,7 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
 
     @Override
     public void onLocationChanged(Location location){
+        mLastLocation = location;
         Toast.makeText(getActivity(),"Location changed!!!!",Toast.LENGTH_SHORT).show();
         callPlaceDetectionApi();
     }
@@ -226,9 +286,9 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
             mRequestingLocationUpdates = true;
             btn1.setText("STOP LOCATION UPDATES");
 
-            startLocationUpdates();
+            startLocationIntentUpdates();
 
-            Log.d("LO", "Periodic location updates started!");
+            Log.d("LOOOOOOOOOOOOOOOO", "Periodic location updates started!");
 
         } else {
             // Changing the button text
@@ -263,4 +323,21 @@ public class LocationFragment extends Fragment  implements GoogleApiClient.OnCon
 
     }
 
+    protected void startLocationIntentUpdates(){
+        if (ActivityCompat.checkSelfPermission(getContext(), "ACCESS_FINE_LOCATION")
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), "ACCESS_COARSE_LOCATION")
+                        != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Intent locationIntent = new Intent(getActivity().getApplicationContext(),
+                LocationChangedReceiver.class);
+        locationPendingIntent = PendingIntent.getBroadcast(
+                getActivity().getApplicationContext(), 0, locationIntent, 0);
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, locationPendingIntent);
+
+        getActivity().registerReceiver(new LocationChangedReceiver(),new IntentFilter());
+    }
 }

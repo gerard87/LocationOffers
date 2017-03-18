@@ -1,7 +1,6 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -38,6 +37,9 @@ public class CommerceFragment extends Fragment {
 
     private SharedPreferences sharedPreferences;
 
+    private DatabaseQueries dq;
+    private List<Message> messages;
+
     public CommerceFragment() {
     }
 
@@ -64,16 +66,15 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setLayoutManager(llm);
 
         msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-        DatabaseQueries du = new DatabaseQueries("Messages", msh);
+        dq = new DatabaseQueries("Messages", msh);
 
-        List<Message> messages;
         if (sharedPreferences.getString("mode", null).equals(getString(R.string.user))){
-            messages = du.getMessageDataFromDB();
+            messages = dq.getMessageDataFromDB();
         } else {
             List<String> fields = Arrays.asList("commerce_id");
             List<String> values = Arrays.asList(
                     Integer.toString(sharedPreferences.getInt("id", -1)));
-            messages = du.getMessageDataByFieldsFromDB(fields, values);
+            messages = dq.getMessageDataByFieldsFromDB(fields, values);
         }
 
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
@@ -116,7 +117,17 @@ public class CommerceFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        adapter.addAll(new DatabaseQueries("Messages", msh).getMessageDataFromDB());
+
+        if (sharedPreferences.getString("mode", null).equals(getString(R.string.user))){
+            messages = dq.getMessageDataFromDB();
+        } else {
+            List<String> fields = Arrays.asList("commerce_id");
+            List<String> values = Arrays.asList(
+                    Integer.toString(sharedPreferences.getInt("id", -1)));
+            messages = dq.getMessageDataByFieldsFromDB(fields, values);
+        }
+
+        adapter.addAll(messages);
     }
 
     private void startFragment(Fragment fragment) {

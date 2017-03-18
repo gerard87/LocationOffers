@@ -1,11 +1,18 @@
 package com.android.udl.locationoffers.fragments;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.os.AsyncTaskCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -13,11 +20,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.Utils.BitmapUtils;
+import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
+import com.android.udl.locationoffers.database.RemovedCommerceSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 
 public class MessageDetailFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
+    private Message message;
+    private MessagesSQLiteHelper msh;
+    private RemovedCommerceSQLiteHelper rcsh;
 
     public MessageDetailFragment() {
         // Required empty public constructor
@@ -34,6 +47,7 @@ public class MessageDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -47,6 +61,9 @@ public class MessageDetailFragment extends Fragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        msh = new MessagesSQLiteHelper(view.getContext(), "DBMessages", null, 1);
+        rcsh = new RemovedCommerceSQLiteHelper(view.getContext(), "DBRemovedMessagesCommerce", null, 1);
+
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.edit_fab);
         ImageView imageView = (ImageView) view.findViewById(R.id.image_cv);
         TextView textView_title = (TextView) view.findViewById(R.id.title_detail);
@@ -54,7 +71,7 @@ public class MessageDetailFragment extends Fragment {
 
         Bundle args = getArguments();
 
-        final Message message = args.getParcelable("Message");
+        message = args.getParcelable("Message");
         imageView.setImageBitmap(message.getImage());
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
@@ -100,5 +117,55 @@ public class MessageDetailFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
         void onEditMessageDetail(String title);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.message_detail, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete_detail:
+                removeItem();
+                addToDeleteDB();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void removeItem() {
+        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                SQLiteDatabase db = msh.getWritableDatabase();
+                db.delete("Messages", "_id=?", new String[]{String.valueOf(message.getId())});
+                return null;
+            }
+        });
+        Toast.makeText(getContext(), "Message id: "+ Integer.toString(message.getId())+" deleted!",
+                Toast.LENGTH_SHORT).show();
+        getActivity().getSupportFragmentManager().popBackStack();
+    }
+
+    private void addToDeleteDB () {
+        final ContentValues data = new ContentValues();
+        data.put("title", message.getTitle());
+        data.put("description", message.getDescription());
+        data.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
+        data.put("commerce_id", message.getCommerce_id());
+
+        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                SQLiteDatabase db = rcsh.getWritableDatabase();
+                db.insert("MessagesCommerceRemoved", null, data);
+                return null;
+            }
+        });
     }
 }

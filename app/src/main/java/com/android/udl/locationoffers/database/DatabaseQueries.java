@@ -23,6 +23,7 @@ public class DatabaseQueries {
     private String db_name;
     private MessagesSQLiteHelper msh;
     private CommercesSQLiteHelper csh;
+    private RemovedCommerceSQLiteHelper rcsh;
 
     public DatabaseQueries(String db_name, MessagesSQLiteHelper msh) {
         this.db_name = db_name;
@@ -32,6 +33,11 @@ public class DatabaseQueries {
     public DatabaseQueries(String db_name, CommercesSQLiteHelper csh) {
         this.db_name = db_name;
         this.csh = csh;
+    }
+
+    public DatabaseQueries(String db_name, RemovedCommerceSQLiteHelper rcsh) {
+        this.db_name = db_name;
+        this.rcsh = rcsh;
     }
 
     public List<Message> getMessageDataFromDB(){
@@ -59,10 +65,24 @@ public class DatabaseQueries {
         return messages;
     }
 
-    public List<Message> getMessageDataByFieldsFromDB(List<String> fields, List<String> values){
-        List<Message> messages = new ArrayList<>();
+    public List<Message> getMessagesDataByFieldsFromDB(List<String> fields, List<String> values) {
 
         SQLiteDatabase db = msh.getReadableDatabase();
+
+        return getMessageDataByFieldsFromDB(fields, values, db);
+    }
+
+    public List<Message> getCommerceRemovedMessagesDataByFieldsFromDB(List<String> fields, List<String> values) {
+
+        SQLiteDatabase db = rcsh.getReadableDatabase();
+
+        return getMessageDataByFieldsFromDB(fields, values, db);
+    }
+
+
+    private List<Message> getMessageDataByFieldsFromDB(List<String> fields,
+                                                       List<String> values, SQLiteDatabase db){
+        List<Message> messages = new ArrayList<>();
 
         if (fields.size() != values.size()) return null;
 

@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
-            startFragment(new CommerceFragment());
+            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
+            startFragment(commerceFragment);
             setTitle(getString(R.string.messages));
         }
 
@@ -171,13 +173,16 @@ public class MainActivity extends AppCompatActivity
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_commerce_list) {
-            startFragment(new CommerceFragment());
+            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
+            startFragment(commerceFragment);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
-
+            CommerceFragment commerceFragment = CommerceFragment.newInstance("removed");
+            startFragment(commerceFragment);
+            title = "Trash";
         } else if (id == R.id.nav_user_list) {
             startFragment(new UserFragment());
             title = getString(R.string.messages);

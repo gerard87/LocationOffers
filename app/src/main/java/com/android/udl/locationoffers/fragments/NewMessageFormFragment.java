@@ -123,7 +123,8 @@ public class NewMessageFormFragment extends Fragment {
             Toast.makeText(getContext(), getString(R.string.message_db_ok), Toast.LENGTH_SHORT).show();
 
 
-            startFragment(new CommerceFragment());
+            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
+            startFragment(commerceFragment);
             mListener.onMessageAdded(getString(R.string.messages));
 
         } else {

@@ -31,6 +31,7 @@
     <string name="exit">Exit</string>
 
     <string name="double_back">Click BACK again to exit</string>
+    <string name="delete">Delete</string>
 
     <string name="TYPE_ACCOUNTING">Comptabilitat</string>
     <string name="TYPE_AIRPORT">Aeroport</string>

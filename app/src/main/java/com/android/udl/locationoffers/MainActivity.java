@@ -213,8 +213,6 @@ public class MainActivity extends AppCompatActivity
             title = "Select Interests";
         }
 
-        startFragment(fragment);
-
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(title);
         }

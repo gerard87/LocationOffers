@@ -30,6 +30,8 @@
     <string name="logout">Log out</string>
     <string name="exit">Exit</string>
 
+    <string name="double_back">Click BACK again to exit</string>
+
     <string name="TYPE_ACCOUNTING">Comptabilitat</string>
     <string name="TYPE_AIRPORT">Aeroport</string>
     <string name="TYPE_AMUSEMENT_PARK">Parc de diversio</string>
@@ -131,6 +133,4 @@
     <string name="TYPE_VETERINARY_CARE">Veterinari</string>
     <string name="TYPE_ZOO">Zoo</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

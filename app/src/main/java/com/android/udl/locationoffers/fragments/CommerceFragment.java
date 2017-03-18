@@ -89,6 +89,7 @@ public class CommerceFragment extends Fragment {
         fab_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                fab_menu.close(false);
                 startFragment(new NewMessageFormFragment());
                 mListener.onFABNewMessageCommerce(getString(R.string.new_message));
             }
@@ -148,6 +149,13 @@ public class CommerceFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
         void onFABNewMessageCommerce(String title);
+    }
+
+    public boolean isFabOpened() {
+        return fab_menu.isOpened();
+    }
+    public void closeFab () {
+        fab_menu.close(true);
     }
 
 }

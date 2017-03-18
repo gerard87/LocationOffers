@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.design.widget.NavigationView;
@@ -14,9 +15,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
@@ -31,8 +34,11 @@ public class MainActivity extends AppCompatActivity
         NewMessageFormFragment.OnFragmentInteractionListener,
         MessageDetailFragment.OnFragmentInteractionListener {
 
+    private static final String TAG = "tag";
+
     private NavigationView navigationView;
     private SharedPreferences sharedPreferences;
+    private boolean doubleBack = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,8 +91,32 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            CommerceFragment fragment = (CommerceFragment) getSupportFragmentManager().findFragmentByTag(TAG);
+            if(fragment != null && fragment.isFabOpened()){
+                fragment.closeFab();
+            } else {
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    if (backAction()) {
+                        super.onBackPressed();
+                    }
+                } else {
+                    super.onBackPressed();
+                }
+            }
         }
+    }
+
+    public boolean backAction(){
+        if(doubleBack) return true;
+        this.doubleBack = true;
+        Toast.makeText(this, getString(R.string.double_back), Toast.LENGTH_SHORT).show();
+        new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBack = false;
+                }
+            }, 2000);
+        return false;
     }
 
     @Override
@@ -116,7 +146,18 @@ public class MainActivity extends AppCompatActivity
         if (fragment != null){
             getSupportFragmentManager()
                     .beginTransaction()
+                    .replace(R.id.content_main, fragment, TAG)
+                    .commit();
+        }
+    }
+
+    private void startFragmentBackStack(Fragment fragment) {
+        //Toast.makeText(this,fragment.toString(),Toast.LENGTH_SHORT).show();
+        if (fragment != null){
+            getSupportFragmentManager()
+                    .beginTransaction()
                     .replace(R.id.content_main, fragment)
+                    .addToBackStack(null)
                     .commit();
         }
     }
@@ -130,18 +171,18 @@ public class MainActivity extends AppCompatActivity
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_commerce_list) {
-            fragment = new CommerceFragment();
+            startFragment(new CommerceFragment());
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
-            fragment = new NewMessageFormFragment();
+            startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
 
         } else if (id == R.id.nav_user_list) {
-            fragment = new UserFragment();
+            startFragment(new UserFragment());
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_location) {
-            fragment = new LocationFragment();
+            startFragment(new LocationFragment());
             title = "Location";
         }else if (id == R.id.nav_settings) {
 
@@ -156,11 +197,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_exit) {
             finish();
         } else if (id == R.id.nav_user_selectInterests){
-            fragment = new PlacesInterestsFragment();
+            startFragmentBackStack(new PlacesInterestsFragment());
             title = "Select Interests";
         }
 
-        startFragment(fragment);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(title);

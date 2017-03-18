@@ -142,19 +142,18 @@ public class PlacesInterestsFragment extends Fragment {
         public PlaceInterestAdapter(Context context, int textViewResourceId,
                                ArrayList<PlaceInterest> interestList) {
             super(context, textViewResourceId, interestList);
-            this.interestList = new ArrayList<PlaceInterest>();
+            this.interestList = new ArrayList<>();
             this.interestList.addAll(interestList);
         }
 
         private class ViewHolder {
-            TextView code;
             CheckBox name;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            ViewHolder holder = null;
+            ViewHolder holder;
             Log.i("ConvertView", String.valueOf(position));
 
             if (convertView == null) {
@@ -163,7 +162,6 @@ public class PlacesInterestsFragment extends Fragment {
                 convertView = vi.inflate(R.layout.interest_place_layout, null);
 
                 holder = new ViewHolder();
-                //holder.code = (TextView) convertView.findViewById(R.id.code);
                 holder.name = (CheckBox) convertView.findViewById(R.id.checkBox1);
                 convertView.setTag(holder);
 
@@ -179,7 +177,7 @@ public class PlacesInterestsFragment extends Fragment {
 
                         SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
-                        editor.putBoolean(cb.getTag().toString(),cb.isChecked());
+                        editor.putBoolean(((PlaceInterest)cb.getTag()).getName(),cb.isChecked());
                         editor.commit();
                     }
                 });
@@ -191,7 +189,7 @@ public class PlacesInterestsFragment extends Fragment {
             PlaceInterest interest = interestList.get(position);
             holder.name.setText(getResources().getIdentifier(interest.getName(),"string","com.android.udl.locationoffers"));
             holder.name.setChecked(interest.isSelected());
-            holder.name.setTag(interest.getName());
+            holder.name.setTag(interest);
 
             return convertView;
 
@@ -202,11 +200,7 @@ public class PlacesInterestsFragment extends Fragment {
 
     private void displayListView(){
         SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
-        ArrayList<PlaceInterest> interestList = new ArrayList<PlaceInterest>();
-        /*PlaceInterest pi = new PlaceInterest("Hola", false);
-        interestList.add(pi);
-        pi = new PlaceInterest("Adeu",true);
-        interestList.add(pi);*/
+        ArrayList<PlaceInterest> interestList = new ArrayList<>();
 
         PlaceInterest pi;
         for(PlacesInterestEnum interest : PlacesInterestEnum.values()){

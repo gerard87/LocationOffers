@@ -35,7 +35,9 @@ public class MainActivity extends AppCompatActivity
         NewMessageFormFragment.OnFragmentInteractionListener,
         MessageDetailFragment.OnFragmentInteractionListener {
 
-    private static final String TAG = "tag";
+    private static final String TAG_USER = "tag_user";
+    private static final String TAG_COMMERCE = "tag_commerce";
+    private static final String TAG_LOCATION = "tag_location";
 
     private NavigationView navigationView;
     private SharedPreferences sharedPreferences;
@@ -70,13 +72,13 @@ public class MainActivity extends AppCompatActivity
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
-            startFragment(new UserFragment());
+            startFragment(new UserFragment(), TAG_USER);
             setTitle(getString(R.string.messages));
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
             CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
-            startFragment(commerceFragment);
+            startFragment(commerceFragment, TAG_COMMERCE);
             setTitle(getString(R.string.messages));
         }
 
@@ -93,9 +95,9 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            CommerceFragment fragment = (CommerceFragment) getSupportFragmentManager().findFragmentByTag(TAG);
-            if(fragment != null && fragment.isFabOpened()){
-                fragment.closeFab();
+            CommerceFragment commerceFragment = (CommerceFragment) getSupportFragmentManager().findFragmentByTag(TAG_COMMERCE);
+            if(commerceFragment != null && commerceFragment.isFabOpened()){
+                commerceFragment.closeFab();
             } else {
                 if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                     if (backAction()) {
@@ -143,12 +145,12 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void startFragment(Fragment fragment) {
+    private void startFragment(Fragment fragment, String tag) {
         //Toast.makeText(this,fragment.toString(),Toast.LENGTH_SHORT).show();
         if (fragment != null){
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.content_main, fragment, TAG)
+                    .replace(R.id.content_main, fragment, tag)
                     .commit();
         }
     }
@@ -174,20 +176,20 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_commerce_list) {
             CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
-            startFragment(commerceFragment);
+            startFragment(commerceFragment, TAG_COMMERCE);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
             CommerceFragment commerceFragment = CommerceFragment.newInstance("removed");
-            startFragment(commerceFragment);
+            startFragment(commerceFragment, TAG_COMMERCE);
             title = "Trash";
         } else if (id == R.id.nav_user_list) {
-            startFragment(new UserFragment());
+            startFragment(new UserFragment(), TAG_USER);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_location) {
-            startFragment(new LocationFragment());
+            startFragment(new LocationFragment(), TAG_LOCATION);
             title = "Location";
         }else if (id == R.id.nav_settings) {
 

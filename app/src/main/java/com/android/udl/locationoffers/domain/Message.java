@@ -17,14 +17,16 @@ public class Message implements Parcelable{
     private String description;
     private Bitmap image;
     private int commerce_id;
+    private boolean removed;
 
 
-    public Message(int id, String title, String description, Bitmap image, int commerce_id) {
+    public Message(int id, String title, String description, Bitmap image, int commerce_id, boolean removed) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.image = image;
         this.commerce_id = commerce_id;
+        this.removed = removed;
     }
 
     protected Message(Parcel in) {
@@ -33,6 +35,7 @@ public class Message implements Parcelable{
         description = in.readString();
         image = in.readParcelable(Bitmap.class.getClassLoader());
         commerce_id = in.readInt();
+        removed = in.readByte()!=0;
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {
@@ -87,15 +90,12 @@ public class Message implements Parcelable{
         this.commerce_id = commerce_id;
     }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", image=" + image +
-                ", commerce_id=" + commerce_id +
-                '}';
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
     }
 
     @Override
@@ -108,5 +108,8 @@ public class Message implements Parcelable{
         dest.writeString(title);
         dest.writeString(description);
         dest.writeByteArray(BitmapUtils.bitmapToByteArray(image));
+        dest.writeInt(id);
+        dest.writeByte((byte)(removed?1:0));
+        dest.writeInt(commerce_id);
     }
 }

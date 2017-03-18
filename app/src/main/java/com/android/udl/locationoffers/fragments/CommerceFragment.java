@@ -78,6 +78,8 @@ public class CommerceFragment extends Fragment {
 
         sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
+        fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
+
         mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
         mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
@@ -90,6 +92,7 @@ public class CommerceFragment extends Fragment {
         } else {
             rcsh = new RemovedCommerceSQLiteHelper(getActivity(), "DBRemovedMessagesCommerce", null, 1);
             dq = new DatabaseQueries("MessagesCommerceRemoved", rcsh);
+            fab_menu.hideMenu(true);
         }
 
         selectMode();
@@ -98,7 +101,6 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setAdapter(adapter);
 
         /* Show/hide floating button*/
-        fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
         fab_menu.setClosedOnTouchOutside(true);
         mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
         /* /Show/hide floating button*/

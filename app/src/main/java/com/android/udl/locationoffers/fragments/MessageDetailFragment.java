@@ -31,6 +31,7 @@ public class MessageDetailFragment extends Fragment {
     private Message message;
     private MessagesSQLiteHelper msh;
     private RemovedCommerceSQLiteHelper rcsh;
+    private boolean removed;
 
     public MessageDetailFragment() {
         // Required empty public constructor
@@ -76,14 +77,28 @@ public class MessageDetailFragment extends Fragment {
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
-                startFragment(fragment);
-                mListener.onEditMessageDetail(getString(R.string.edit_message));
-            }
-        });
+        removed = message.isRemoved();
+        if (removed) {
+            fab.setImageResource(R.drawable.ic_restore_white_24dp);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    removeItem("MessagesCommerceRemoved");
+                    addToDB("Messages");
+                }
+            });
+        } else {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
+                    startFragment(fragment);
+                    mListener.onEditMessageDetail(getString(R.string.edit_message));
+                }
+            });
+        }
+
+
 
 
     }
@@ -123,49 +138,72 @@ public class MessageDetailFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        inflater.inflate(R.menu.message_detail, menu);
+        if (!removed) inflater.inflate(R.menu.message_detail, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_detail:
-                removeItem();
-                addToDeleteDB();
+                removeItem("Messages");
+                addToDB("MessagesCommerceRemoved");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void removeItem() {
-        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                SQLiteDatabase db = msh.getWritableDatabase();
-                db.delete("Messages", "_id=?", new String[]{String.valueOf(message.getId())});
-                return null;
-            }
-        });
-        Toast.makeText(getContext(), "Message id: "+ Integer.toString(message.getId())+" deleted!",
-                Toast.LENGTH_SHORT).show();
+    private void removeItem(final String dbName) {
+
+        final SQLiteDatabase db;
+        String msg = "";
+        if (dbName.equals("MessagesCommerceRemoved")) {
+            db = rcsh.getWritableDatabase();
+        } else if (dbName.equals("Messages")){
+            msg = "Message id: " + Integer.toString(message.getId()) + " deleted!";
+            db = msh.getWritableDatabase();
+        } else {
+            db = null;
+        }
+        if (db != null) {
+            AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    db.delete(dbName, "_id=?", new String[]{String.valueOf(message.getId())});
+                    return null;
+                }
+            });
+            if (!msg.equals(""))Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        }
         getActivity().getSupportFragmentManager().popBackStack();
     }
 
-    private void addToDeleteDB () {
+    private void addToDB (final String dbName) {
         final ContentValues data = new ContentValues();
         data.put("title", message.getTitle());
         data.put("description", message.getDescription());
         data.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
         data.put("commerce_id", message.getCommerce_id());
 
-        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                SQLiteDatabase db = rcsh.getWritableDatabase();
-                db.insert("MessagesCommerceRemoved", null, data);
-                return null;
-            }
-        });
+        final SQLiteDatabase db;
+        String msg = "";
+        if (dbName.equals("MessagesCommerceRemoved")) {
+            db = rcsh.getWritableDatabase();
+        } else if (dbName.equals("Messages")){
+            msg = "Message id: " + Integer.toString(message.getId()) + " restored!";
+            db = msh.getWritableDatabase();
+        } else {
+            db = null;
+        }
+        if (db != null) {
+            AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    db.insert(dbName, null, data);
+                    return null;
+                }
+            });
+            if (!msg.equals(""))Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        }
     }
 }

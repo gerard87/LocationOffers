@@ -49,6 +49,8 @@ public class DatabaseQueries {
 
         Log.i("DATABASE: ", query);
 
+        boolean removed = false;
+
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.moveToFirst()) {
             do {
@@ -57,7 +59,8 @@ public class DatabaseQueries {
                         cursor.getString(1),
                         cursor.getString(2),
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
-                        cursor.getInt(4));
+                        cursor.getInt(4),
+                        removed);
                 messages.add(message);
             } while (cursor.moveToNext());
         }
@@ -69,19 +72,21 @@ public class DatabaseQueries {
 
         SQLiteDatabase db = msh.getReadableDatabase();
 
-        return getMessageDataByFieldsFromDB(fields, values, db);
+        return getMessageDataByFieldsFromDB(fields, values, db, false);
     }
 
     public List<Message> getCommerceRemovedMessagesDataByFieldsFromDB(List<String> fields, List<String> values) {
 
         SQLiteDatabase db = rcsh.getReadableDatabase();
 
-        return getMessageDataByFieldsFromDB(fields, values, db);
+        return getMessageDataByFieldsFromDB(fields, values, db, true);
     }
 
 
     private List<Message> getMessageDataByFieldsFromDB(List<String> fields,
-                                                       List<String> values, SQLiteDatabase db){
+                                                       List<String> values,
+                                                       SQLiteDatabase db,
+                                                       boolean removed){
         List<Message> messages = new ArrayList<>();
 
         if (fields.size() != values.size()) return null;
@@ -108,7 +113,8 @@ public class DatabaseQueries {
                         cursor.getString(1),
                         cursor.getString(2),
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
-                        cursor.getInt(4));
+                        cursor.getInt(4),
+                        removed);
                 messages.add(message);
             } while (cursor.moveToNext());
         }

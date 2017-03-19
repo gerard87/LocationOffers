@@ -1,6 +1,10 @@
 package com.android.udl.locationoffers.services;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -8,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,9 +20,11 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.QRcodeCreator;
 import com.android.udl.locationoffers.database.MessageSQLiteManage;
@@ -268,6 +275,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                             m.getImage(),m.getCommerce_id(),true,false,qrCode);
                                     usql.insertMessage(userMessage);
                                     showToast("missatge insertat");
+                                    showNotification(userMessage);
                                 }
                             }
                         }
@@ -289,6 +297,20 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void showNotification(UserMessage message){
+        NotificationCompat.Builder mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this.getApplicationContext())
+                        .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
+                        .setContentTitle("LocationOffers")
+                        .setContentText(message.getTitle() + ": " + message.getDescription())
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        int mNotificationId = message.getId();
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr =(NotificationManager) this.getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     //call this method to know if service is running and should restart after some changes in types of places

@@ -150,7 +150,7 @@ public class NewMessageFormFragment extends Fragment {
         List<String> fields = Arrays.asList("_id");
         List<String> values = Arrays.asList(Integer.toString(sharedPreferences.getInt("id", -1)));
 
-        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values);
+        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values, false);
 
         Log.i("AAAAAAA", Integer.toString(commerces.size()));
 

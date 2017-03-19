@@ -24,10 +24,24 @@
             android:scaleType="centerCrop"
             tools:ignore="ContentDescription" />
 
+
+        <TextView
+            android:id="@+id/name_cv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/image_cv"
+            android:paddingLeft="16sp"
+            android:paddingRight="16dp"
+            android:paddingTop="5dp"
+            android:textColor="#000"
+            android:textSize="18sp"
+            tools:ignore="RtlHardcoded"/>
+
         <TextView
             android:id="@+id/title_cv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/name_cv"
             android:layout_toRightOf="@+id/image_cv"
             android:paddingLeft="16sp"
             android:paddingRight="16dp"

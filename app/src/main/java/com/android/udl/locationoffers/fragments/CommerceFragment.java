@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
+import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
 import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.database.RemovedCommerceSQLiteHelper;
@@ -35,6 +36,7 @@ public class CommerceFragment extends Fragment {
 
     private MessagesSQLiteHelper msh;
     private RemovedCommerceSQLiteHelper rcsh;
+    private CommercesSQLiteHelper csh;
 
     private String db_mode;
 
@@ -87,8 +89,9 @@ public class CommerceFragment extends Fragment {
 
         db_mode = getArguments().getString("db");
         if (db_mode != null && db_mode.equals("messages")) {
+            csh = new CommercesSQLiteHelper(getActivity(), "DBCommerces", null, 1);
             msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-            dq = new DatabaseQueries("Messages", msh);
+            dq = new DatabaseQueries("Messages", msh, csh);
         } else {
             rcsh = new RemovedCommerceSQLiteHelper(getActivity(), "DBRemovedMessagesCommerce", null, 1);
             dq = new DatabaseQueries("MessagesCommerceRemoved", rcsh);

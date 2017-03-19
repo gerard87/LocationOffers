@@ -12,6 +12,7 @@ import com.android.udl.locationoffers.domain.Message;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,9 +26,10 @@ public class DatabaseQueries {
     private CommercesSQLiteHelper csh;
     private RemovedCommerceSQLiteHelper rcsh;
 
-    public DatabaseQueries(String db_name, MessagesSQLiteHelper msh) {
+    public DatabaseQueries(String db_name, MessagesSQLiteHelper msh, CommercesSQLiteHelper csh) {
         this.db_name = db_name;
         this.msh = msh;
+        this.csh = csh;
     }
 
     public DatabaseQueries(String db_name, CommercesSQLiteHelper csh) {
@@ -60,12 +62,19 @@ public class DatabaseQueries {
                         cursor.getString(2),
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
                         cursor.getInt(4),
-                        removed);
+                        removed,
+                        this.getCommerceName(cursor.getInt(4),true));
                 messages.add(message);
             } while (cursor.moveToNext());
         }
 
         return messages;
+    }
+
+    public String getCommerceName (int id, boolean commercename) {
+        List<String> field = Arrays.asList("_id");
+        List<String> values = Arrays.asList(Integer.toString(id));
+        return getCommerceDataByFieldsFromDB(field, values, commercename).get(0).getName();
     }
 
     public List<Message> getMessagesDataByFieldsFromDB(List<String> fields, List<String> values) {
@@ -114,7 +123,8 @@ public class DatabaseQueries {
                         cursor.getString(2),
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
                         cursor.getInt(4),
-                        removed);
+                        removed,
+                        this.getCommerceName(cursor.getInt(4), true));
                 messages.add(message);
             } while (cursor.moveToNext());
         }
@@ -142,14 +152,18 @@ public class DatabaseQueries {
         return commerces;
     }
 
-    public List<Commerce> getCommerceDataByFieldsFromDB(List<String> fields, List<String> values){
+    public List<Commerce> getCommerceDataByFieldsFromDB(List<String> fields,
+                                                        List<String> values,
+                                                        boolean commercename){
         List<Commerce> commerces = new ArrayList<>();
+
+        String name = commercename ? "Commerces" : db_name;
 
         SQLiteDatabase db = csh.getReadableDatabase();
 
         if (fields.size() != values.size()) return null;
 
-        String query = "SELECT * from "+db_name+" WHERE ";
+        String query = "SELECT * from "+name+" WHERE ";
         for (int i=0; i<fields.size(); i++) {
             boolean number = false;
             if(TextUtils.isDigitsOnly(values.get(i))) {

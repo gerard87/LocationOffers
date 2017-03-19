@@ -3,6 +3,7 @@ package com.android.udl.locationoffers.adapters;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
+import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.OnItemClickListener;
 
@@ -24,9 +27,11 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     private List<Message> mDataset;
     private OnItemClickListener listener;
+    private CommercesSQLiteHelper csh;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
+        TextView name;
         TextView title;
         TextView description;
         ImageView image;
@@ -36,6 +41,7 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             title = (TextView) itemView.findViewById(R.id.title_cv);
             description = (TextView) itemView.findViewById(R.id.description_cv);
             image = (ImageView) itemView.findViewById(R.id.image_cv);
+            name = (TextView) itemView.findViewById(R.id.name_cv);
         }
     }
 
@@ -49,6 +55,7 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                                                    int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.my_card_view, parent, false);
+        csh = new CommercesSQLiteHelper(parent.getContext(), "DBCommerces", null, 1);
         return new ViewHolder(v);
     }
 
@@ -58,9 +65,14 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.description.setText(mDataset.get(position).getDescription());
         holder.image.setImageBitmap(mDataset.get(position).getImage());
 
+        /*DatabaseQueries dq = new DatabaseQueries("Commerces", csh);
+        String name = dq.getCommerceName(mDataset.get(position).getCommerce_id());*/
+        holder.name.setText(mDataset.get(position).getCommerce_name());
+
         ViewCompat.setTransitionName(holder.image, String.valueOf(position)+"_image");
         ViewCompat.setTransitionName(holder.title, String.valueOf(position)+"_title");
         ViewCompat.setTransitionName(holder.description, String.valueOf(position)+"_desc");
+        ViewCompat.setTransitionName(holder.name, String.valueOf(position)+"_name");
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

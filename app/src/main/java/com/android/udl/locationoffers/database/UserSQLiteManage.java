@@ -20,6 +20,8 @@ public class UserSQLiteManage {
     private Context context;
     UserMessagesSQLiteHelper usdbh;
     SQLiteDatabase db;
+    MessagesSQLiteHelper msh;
+    CommercesSQLiteHelper csh;
 
     public UserSQLiteManage(Context context){
         this.context = context;
@@ -28,6 +30,8 @@ public class UserSQLiteManage {
 
     public void initialization(){
         usdbh = new UserMessagesSQLiteHelper(context, "DBUser", null, 1);
+        msh = new MessagesSQLiteHelper(context, "DBMessages", null, 1);
+        csh = new CommercesSQLiteHelper(context, "DBCommerces", null, 1);
         db = usdbh.getWritableDatabase();
     }
 
@@ -45,6 +49,8 @@ public class UserSQLiteManage {
     public List<Message> getUserMessagesToShow(){
         List<Message> messageList = new ArrayList<>();
 
+        DatabaseQueries dq = new DatabaseQueries("Messages", msh, csh);
+
         Cursor c = db.rawQuery("SELECT * FROM UserMessages;",null);
         if(c.moveToFirst()){
             do{
@@ -54,7 +60,8 @@ public class UserSQLiteManage {
                         c.getString(2),
                         BitmapUtils.byteArrayToBitmap(c.getBlob(3)),
                         c.getInt(4),
-                        false);
+                        false,
+                        dq.getCommerceName(c.getInt(4), true));
                 messageList.add(m);
 
             }while(c.moveToNext());

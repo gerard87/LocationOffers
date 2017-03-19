@@ -93,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!name.equals("") && !password.equals("")) {
             List<String> fields = Arrays.asList("name","password");
             List<String> values = Arrays.asList(name, password);
-            List<Commerce> commerces = databaseQueries.getCommerceDataByFieldsFromDB(fields, values);
+            List<Commerce> commerces = databaseQueries.getCommerceDataByFieldsFromDB(fields, values, false);
             if (commerces != null && commerces.size() > 0) {
                 this.commerce = commerces.get(0);
                 return true;

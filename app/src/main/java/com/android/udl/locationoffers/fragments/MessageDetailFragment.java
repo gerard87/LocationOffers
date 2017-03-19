@@ -69,6 +69,7 @@ public class MessageDetailFragment extends Fragment {
         ImageView imageView = (ImageView) view.findViewById(R.id.image_cv);
         TextView textView_title = (TextView) view.findViewById(R.id.title_detail);
         TextView textView_description = (TextView) view.findViewById(R.id.description_detail);
+        TextView textView_name = (TextView) view.findViewById(R.id.name_detail);
 
         Bundle args = getArguments();
 
@@ -76,6 +77,7 @@ public class MessageDetailFragment extends Fragment {
         imageView.setImageBitmap(message.getImage());
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
+        textView_name.setText(message.getCommerce_name());
 
         removed = message.isRemoved();
         if (removed) {

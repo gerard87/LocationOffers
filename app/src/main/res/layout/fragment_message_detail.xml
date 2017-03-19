@@ -46,6 +46,16 @@
         android:orientation="vertical">
 
         <TextView
+        android:id="@+id/name_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:lineSpacingExtra="8dp"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:transitionName="messageName" />
+
+        <TextView
             android:id="@+id/title_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

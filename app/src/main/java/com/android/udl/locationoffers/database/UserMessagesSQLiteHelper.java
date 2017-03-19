@@ -11,12 +11,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class UserMessagesSQLiteHelper extends SQLiteOpenHelper {
 
     StringBuilder sb = new StringBuilder("CREATE TABLE UserMessages")
-            .append("(_id INTEGER PRIMARY KEY AUTOINCREMENT, ")
+            .append("(_id, ")
             .append("title TEXT, ")
             .append("description TEXT, ")
             .append("image BLOB, ")
             .append("commerce_id INTEGER, ")
-
             .append("shown INTEGER, ")
             .append("used INTEGER, ")
             .append("qrCode BLOB, ")

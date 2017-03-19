@@ -1,5 +1,6 @@
 package com.android.udl.locationoffers.database;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,6 +8,7 @@ import android.graphics.BitmapFactory;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.domain.UserMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +41,6 @@ public class UserSQLiteManage {
         return db != null;
     }
 
-    public boolean checkIfOfferExists(int id){
-        String[] args = new String[] { String.valueOf(id) };
-
-        Cursor c = db.rawQuery("SELECT _id FROM UserMessages WHERE _id = ?",args);
-        return c.getCount() >0;
-    }
-
     public List<Message> getUserMessagesToShow(){
         List<Message> messageList = new ArrayList<>();
 
@@ -67,6 +62,26 @@ public class UserSQLiteManage {
             }while(c.moveToNext());
         }
         return messageList;
+    }
+
+    public boolean checkIfMessageExistByID(int messageID){
+        String[] args = new String[] { String.valueOf(messageID) };
+
+        Cursor c = db.rawQuery("SELECT _id FROM UserMessages WHERE commerce_id = ?",args);
+        return (c!=null && c.getCount()>0);
+    }
+
+    public void insertMessage(UserMessage message){
+        ContentValues newRegister = new ContentValues();
+        newRegister.put("title",message.getTitle());
+        newRegister.put("description",message.getDescription());
+        newRegister.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
+        newRegister.put("commerce_id", message.getCommerce_id());
+        newRegister.put("shown", 1);
+        newRegister.put("used",1);
+        newRegister.put("qrCode",BitmapUtils.bitmapToByteArray(message.getQrCode()));
+
+        db.insert("UserMessages", null, newRegister);
     }
 
 

@@ -1,6 +1,7 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.PlaceInterest;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
+import com.android.udl.locationoffers.services.NotificationService;
 
 import java.util.ArrayList;
 
@@ -117,6 +119,21 @@ public class PlacesInterestsFragment extends Fragment {
         mListener = null;
     }
 
+
+    @Override
+    public void onPause(){
+        if(NotificationService.isServiceRunning()){
+            Intent serviceIntent = new Intent(getActivity(), NotificationService.class);
+            serviceIntent.addCategory(NotificationService.TAG);
+            getActivity().stopService(serviceIntent);
+
+            serviceIntent = new Intent(getActivity(), NotificationService.class);
+            serviceIntent.addCategory(NotificationService.TAG);
+            getActivity().startService(serviceIntent);
+        }
+        super.onPause();
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -211,6 +228,8 @@ public class PlacesInterestsFragment extends Fragment {
         dataAdapter = new PlaceInterestAdapter(myContext,R.layout.interest_place_layout,interestList);
         lv.setAdapter(dataAdapter);
     }
+
+
 
     /*private void checkButtonClick() {
 

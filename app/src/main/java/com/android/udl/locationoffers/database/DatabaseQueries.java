@@ -29,7 +29,6 @@ public class DatabaseQueries {
     public DatabaseQueries(String db_name, MessagesSQLiteHelper msh, CommercesSQLiteHelper csh) {
         this.db_name = db_name;
         this.msh = msh;
-        this.csh = csh;
     }
 
     public DatabaseQueries(String db_name, CommercesSQLiteHelper csh) {
@@ -40,7 +39,6 @@ public class DatabaseQueries {
     public DatabaseQueries(String db_name, RemovedCommerceSQLiteHelper rcsh, CommercesSQLiteHelper csh) {
         this.db_name = db_name;
         this.rcsh = rcsh;
-        this.csh = csh;
     }
 
     public List<Message> getMessageDataFromDB(){
@@ -64,7 +62,7 @@ public class DatabaseQueries {
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
                         cursor.getInt(4),
                         removed,
-                        this.getCommerceName(cursor.getInt(4),true));
+                        cursor.getString(5));
                 messages.add(message);
             } while (cursor.moveToNext());
         }
@@ -72,11 +70,6 @@ public class DatabaseQueries {
         return messages;
     }
 
-    public String getCommerceName (int id, boolean commercename) {
-        List<String> field = Arrays.asList("_id");
-        List<String> values = Arrays.asList(Integer.toString(id));
-        return getCommerceDataByFieldsFromDB(field, values, commercename).get(0).getName();
-    }
 
     public List<Message> getMessagesDataByFieldsFromDB(List<String> fields, List<String> values) {
 
@@ -101,6 +94,8 @@ public class DatabaseQueries {
 
         if (fields.size() != values.size()) return null;
 
+
+
         String query = "SELECT * from "+db_name+" WHERE ";
         for (int i=0; i<fields.size(); i++) {
             boolean number = false;
@@ -114,7 +109,7 @@ public class DatabaseQueries {
             if (!number) query += "'";
             if (i != fields.size()-1) query += " AND ";
         }
-
+        Log.d("DTB", query);
         Cursor cursor = db.rawQuery(query , null);
         if (cursor.moveToFirst()) {
             do {
@@ -125,7 +120,7 @@ public class DatabaseQueries {
                         BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)),
                         cursor.getInt(4),
                         removed,
-                        this.getCommerceName(cursor.getInt(4), true));
+                        cursor.getString(5));
                 messages.add(message);
             } while (cursor.moveToNext());
         }
@@ -154,17 +149,14 @@ public class DatabaseQueries {
     }
 
     public List<Commerce> getCommerceDataByFieldsFromDB(List<String> fields,
-                                                        List<String> values,
-                                                        boolean commercename){
+                                                        List<String> values){
         List<Commerce> commerces = new ArrayList<>();
-
-        String name = commercename ? "Commerces" : db_name;
 
         SQLiteDatabase db = csh.getReadableDatabase();
 
         if (fields.size() != values.size()) return null;
 
-        String query = "SELECT * from "+name+" WHERE ";
+        String query = "SELECT * from "+db_name+" WHERE ";
         for (int i=0; i<fields.size(); i++) {
             boolean number = false;
             if(TextUtils.isDigitsOnly(values.get(i))) {

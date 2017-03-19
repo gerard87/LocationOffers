@@ -56,7 +56,7 @@ public class UserSQLiteManage {
                         BitmapUtils.byteArrayToBitmap(c.getBlob(3)),
                         c.getInt(4),
                         false,
-                        dq.getCommerceName(c.getInt(4), true));
+                        c.getString(5));
                 messageList.add(m);
 
             }while(c.moveToNext());

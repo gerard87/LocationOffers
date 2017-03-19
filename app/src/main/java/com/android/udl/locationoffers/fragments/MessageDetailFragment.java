@@ -186,6 +186,7 @@ public class MessageDetailFragment extends Fragment {
         data.put("description", message.getDescription());
         data.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
         data.put("commerce_id", message.getCommerce_id());
+        data.put("commerce_name", message.getCommerce_name());
 
         final SQLiteDatabase db;
         String msg = "";

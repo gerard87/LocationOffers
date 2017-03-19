@@ -16,6 +16,7 @@ public class RemovedCommerceSQLiteHelper extends SQLiteOpenHelper {
             "description TEXT, " +
             "image BLOB, " +
             "commerce_id INTEGER, " +
+            "commerce_name TEXT, " +
             "FOREIGN KEY (commerce_id) REFERENCES Commerces(_id));";
 
     public RemovedCommerceSQLiteHelper (Context context, String name,

@@ -16,6 +16,7 @@ public class MessagesSQLiteHelper extends SQLiteOpenHelper{
             "description TEXT, " +
             "image BLOB, " +
             "commerce_id INTEGER, " +
+            "commerce_name TEXT, " +
             "FOREIGN KEY (commerce_id) REFERENCES Commerces(_id));";
 
     public MessagesSQLiteHelper (Context context, String name,

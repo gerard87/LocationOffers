@@ -88,7 +88,8 @@ public class MessageSQLiteManage {
                             c.getString(2),
                             BitmapUtils.byteArrayToBitmap(c.getBlob(3)),
                             c.getInt(4),
-                            false
+                            false,
+                            c.getString(5)
                     );
 
                     messageList.add(message);

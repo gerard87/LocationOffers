@@ -155,13 +155,14 @@ public class NewMessageFormFragment extends Fragment {
         List<String> fields = Arrays.asList("_id");
         List<String> values = Arrays.asList(Integer.toString(sharedPreferences.getInt("id", -1)));
 
-        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values, false);
+        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values);
 
         if (commerces != null && commerces.size() > 0) {
             commerce = commerces.get(0);
 
             data.put("image", BitmapUtils.bitmapToByteArray(commerce.getImage()));
             data.put("commerce_id", commerce.getId());
+            data.put("commerce_name", commerce.getName());
         }
 
         AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {

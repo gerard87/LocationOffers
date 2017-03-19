@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -119,6 +120,10 @@ public class NewMessageFormFragment extends Fragment {
                 save(data);
             }
 
+            InputMethodManager imm = (InputMethodManager)
+                    getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 
             Toast.makeText(getContext(), getString(R.string.message_db_ok), Toast.LENGTH_SHORT).show();
 
@@ -151,8 +156,6 @@ public class NewMessageFormFragment extends Fragment {
         List<String> values = Arrays.asList(Integer.toString(sharedPreferences.getInt("id", -1)));
 
         List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values, false);
-
-        Log.i("AAAAAAA", Integer.toString(commerces.size()));
 
         if (commerces != null && commerces.size() > 0) {
             commerce = commerces.get(0);

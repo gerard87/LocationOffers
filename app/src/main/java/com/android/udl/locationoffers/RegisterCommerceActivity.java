@@ -32,7 +32,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
     private static final int PICK_IMAGE = 1;
 
     private ImageView imageView;
-    private EditText et_name, et_pass;
+    private EditText et_name, et_pass, et_placesID;
     private Bitmap bitmap;
     private Button btn_img, btn_ok;
     private CommercesSQLiteHelper csh;
@@ -47,6 +47,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
         csh = new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
 
         et_name = (EditText) findViewById(R.id.editText_register_name);
+        et_placesID = (EditText) findViewById(R.id.editText_register_placesID);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
         btn_img = (Button) findViewById(R.id.button_form_image);
         btn_ok = (Button) findViewById(R.id.button_register_ok);
@@ -88,6 +89,7 @@ public class RegisterCommerceActivity extends AppCompatActivity {
                 && !et_pass.toString().equals("")) {
             ContentValues data = new ContentValues();
             data.put("name", et_name.getText().toString());
+            data.put("placesID", et_placesID.getText().toString());
             data.put("password", et_pass.getText().toString());
             data.put("image", image);
 

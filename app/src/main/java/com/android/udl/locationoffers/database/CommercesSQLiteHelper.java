@@ -13,6 +13,7 @@ public class CommercesSQLiteHelper extends SQLiteOpenHelper {
     String sqlCreate = "CREATE TABLE Commerces " +
             "(_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "name TEXT, " +
+            "placesID TEXT" +
             "password TEXT, " +
             "image BLOB)";
 

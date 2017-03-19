@@ -133,7 +133,8 @@ public class DatabaseQueries {
                 Commerce commerce = new Commerce(cursor.getInt(0),
                         cursor.getString(1),
                         cursor.getString(2),
-                        BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)));
+                        cursor.getString(3),
+                        BitmapUtils.byteArrayToBitmap(cursor.getBlob(4)));
                 commerces.add(commerce);
             } while (cursor.moveToNext());
         }
@@ -170,7 +171,8 @@ public class DatabaseQueries {
                 Commerce commerce = new Commerce(cursor.getInt(0),
                         cursor.getString(1),
                         cursor.getString(2),
-                        BitmapUtils.byteArrayToBitmap(cursor.getBlob(3)));
+                        cursor.getString(3),
+                        BitmapUtils.byteArrayToBitmap(cursor.getBlob(4)));
                 commerces.add(commerce);
             } while (cursor.moveToNext());
         }

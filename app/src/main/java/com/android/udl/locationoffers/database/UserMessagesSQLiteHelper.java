@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class UserSQLiteHelper extends SQLiteOpenHelper {
 
-    StringBuilder sb = new StringBuilder("CREATE TABLE Offer")
+    StringBuilder sb = new StringBuilder("CREATE TABLE UserMessages")
             .append("(_id INTEGER PRIMARY KEY, ")
             .append("shown INTEGER, ")
             .append("used INTEGER, ")

@@ -38,42 +38,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/button_selectPlacesID"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Select PlacesID" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp">
-
-            <TextView
-                android:id="@+id/textView_register_placesID"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PlacesID"
-                android:layout_marginRight="10dp"/>
-
-            <EditText
-                android:id="@+id/editText_register_placesID"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -94,6 +58,19 @@
                 android:ems="10"
                 android:inputType="textPassword" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_selectPlacesID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Select Place" />
         </LinearLayout>
 
         <LinearLayout

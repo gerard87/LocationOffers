@@ -44,12 +44,13 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
     private static final int PICK_IMAGE = 1;
 
     private ImageView imageView;
-    private EditText et_name, et_pass, et_placesID;
+    private EditText et_name, et_pass;
     private Bitmap bitmap;
     private Button btn_img, btn_ok, btn_placesID;
     private CommercesSQLiteHelper csh;
     private SharedPreferences sharedPreferences;
     private long id;
+    private String placesID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +62,6 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
         csh = new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
 
         et_name = (EditText) findViewById(R.id.editText_register_name);
-        et_placesID = (EditText) findViewById(R.id.editText_register_placesID);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
         btn_img = (Button) findViewById(R.id.button_form_image);
         btn_ok = (Button) findViewById(R.id.button_register_ok);
@@ -106,12 +106,12 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
     private void saveToDatabase () {
         byte[] image = BitmapUtils.bitmapToByteArray(bitmap);
 
-        if (et_name != null && et_pass != null && image != null
+        if (et_name != null && et_pass != null && image != null && placesID != null
                 && !et_name.getText().toString().equals("")
                 && !et_pass.toString().equals("")) {
             ContentValues data = new ContentValues();
             data.put("name", et_name.getText().toString());
-            data.put("placesID", et_placesID.getText().toString());
+            data.put("placesID", placesID);
             data.put("password", et_pass.getText().toString());
             data.put("image", image);
 
@@ -135,17 +135,17 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
 
         if( requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK ) {
-            PlacePicker.getPlace(imageReturnedIntent, this);
+            PlacePicker.getPlace(intent, this);
         }
 
         switch(requestCode) {
             case PICK_IMAGE:
                 if(resultCode == Activity.RESULT_OK){
-                    Uri selectedImage = imageReturnedIntent.getData();
+                    Uri selectedImage = intent.getData();
                     String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
                     Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
@@ -162,8 +162,10 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
 
                 }break;
             case PLACE_PICKER_REQUEST:
-                String placeID = PlacePicker.getPlace(imageReturnedIntent, this).getId();
-                et_placesID.setText(placeID);
+                if(intent != null){
+                    placesID = PlacePicker.getPlace(intent, this).getId();
+                }
+
                 break;
         }
     }

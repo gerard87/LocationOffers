@@ -88,13 +88,13 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setLayoutManager(llm);
 
         db_mode = getArguments().getString("db");
+        csh = new CommercesSQLiteHelper(getActivity(), "DBCommerces", null, 1);
         if (db_mode != null && db_mode.equals("messages")) {
-            csh = new CommercesSQLiteHelper(getActivity(), "DBCommerces", null, 1);
             msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
             dq = new DatabaseQueries("Messages", msh, csh);
         } else {
             rcsh = new RemovedCommerceSQLiteHelper(getActivity(), "DBRemovedMessagesCommerce", null, 1);
-            dq = new DatabaseQueries("MessagesCommerceRemoved", rcsh);
+            dq = new DatabaseQueries("MessagesCommerceRemoved", rcsh, csh);
             fab_menu.hideMenu(true);
         }
 

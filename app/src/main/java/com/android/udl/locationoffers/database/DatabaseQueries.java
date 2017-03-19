@@ -37,9 +37,10 @@ public class DatabaseQueries {
         this.csh = csh;
     }
 
-    public DatabaseQueries(String db_name, RemovedCommerceSQLiteHelper rcsh) {
+    public DatabaseQueries(String db_name, RemovedCommerceSQLiteHelper rcsh, CommercesSQLiteHelper csh) {
         this.db_name = db_name;
         this.rcsh = rcsh;
+        this.csh = csh;
     }
 
     public List<Message> getMessageDataFromDB(){

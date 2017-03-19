@@ -4,6 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,12 +18,15 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.Utils.QRcodeCreator;
 import com.android.udl.locationoffers.database.MessageSQLiteManage;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
+import com.android.udl.locationoffers.domain.UserMessage;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,6 +38,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
+import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -226,7 +233,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     }
 
     private void callPlaceDetectionApi() throws SecurityException {
-        showToast("placeChanged");
 
         PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                 .getCurrentPlace(mGoogleApiClient, null);
@@ -246,12 +252,22 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                         "likelihood: %g, TYPE: '%s'",
                                 placeLikelihood.getPlace().getName(),
                                 placeLikelihood.getLikelihood(),placeLikelihood.getPlace().getPlaceTypes().toString()));
+
                         messageList = msql.getMessagesByPlacesID(placeLikelihood.getPlace().getId());
 
                         if(messageList != null){
                             for(Message m : messageList){
                                 if(!usql.checkIfMessageExistByID(m.getId())){
-                                    //el missatge no existeix per tant s'ha de crear la notificacio
+                                    Bitmap qrCode;
+                                    try{
+                                        qrCode = QRcodeCreator.generateQrCode("USER"+m.getId());
+                                    }catch(WriterException e){
+                                        qrCode = BitmapFactory.decodeResource(getResources(), R.drawable.ic_domain_black_24dp);
+                                    }
+                                    UserMessage userMessage = new UserMessage(m.getId(), m.getTitle(), m.getDescription(),
+                                            m.getImage(),m.getCommerce_id(),true,false,qrCode);
+                                    usql.insertMessage(userMessage);
+                                    showToast("missatge insertat");
                                 }
                             }
                         }

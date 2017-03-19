@@ -19,8 +19,11 @@ import java.util.List;
 public class MessageSQLiteManage {
 
     private Context context;
-    MessagesSQLiteHelper usdbh;
-    SQLiteDatabase db;
+    CommercesSQLiteHelper commercesDBH;
+    SQLiteDatabase dbCommerces;
+
+    MessagesSQLiteHelper messagesDBH;
+    SQLiteDatabase dbMessages;
 
     public MessageSQLiteManage(Context context){
         this.context = context;
@@ -28,15 +31,14 @@ public class MessageSQLiteManage {
     }
 
     public void initialization(){
-        usdbh = new MessagesSQLiteHelper(context, "DBMessages", null, 1);
-        db = usdbh.getWritableDatabase();
+        commercesDBH = new CommercesSQLiteHelper(context, "DBCommerces", null, 1);
+        dbCommerces = commercesDBH.getWritableDatabase();
+
+        messagesDBH = new MessagesSQLiteHelper(context, "DBMessages", null, 1);
+        dbMessages = messagesDBH.getWritableDatabase();
     }
 
-    public boolean isDatabaseInitialized(){
-        return db != null;
-    }
-
-    public List<Message> getMessagesByPlacesID(String placesID){
+    /*public List<Message> getMessagesByPlacesID(String placesID){
         List<Message> messageList = new ArrayList<>();
         Message message;
 
@@ -62,6 +64,38 @@ public class MessageSQLiteManage {
                 messageList.add(message);
             }while(c.moveToNext());
         }
+        return messageList;
+    }*/
+
+    public List<Message> getMessagesByPlacesID( String placesID){
+        List<Message> messageList = new ArrayList<>();
+        Message message;
+
+        String[] args = new String[] { placesID };
+        Cursor c = dbCommerces.rawQuery("Select _id FROM Commerces WHERE placesID = ?;",args);
+
+        if(c.moveToFirst()){
+            int commerce_id = c.getInt(0);
+
+            args = new String[] { String.valueOf(commerce_id) };
+            c = dbMessages.rawQuery("Select * FROM Messages WHERE commerce_id = ?", args);
+
+            if(c.moveToFirst()){
+                do{
+                    message = new Message(
+                            c.getInt(0),
+                            c.getString(1),
+                            c.getString(2),
+                            BitmapUtils.byteArrayToBitmap(c.getBlob(3)),
+                            c.getInt(4),
+                            false
+                    );
+
+                    messageList.add(message);
+                }while(c.moveToNext());
+            }
+        }
+
         return messageList;
     }
 

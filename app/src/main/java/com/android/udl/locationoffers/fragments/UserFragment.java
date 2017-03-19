@@ -1,5 +1,6 @@
 package com.android.udl.locationoffers.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -7,6 +8,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -17,6 +21,7 @@ import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.ItemClick;
+import com.android.udl.locationoffers.services.NotificationService;
 
 import java.util.List;
 
@@ -24,6 +29,9 @@ import java.util.List;
 public class UserFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
+
+    private static final int MENU_START_SERVICE = 10;
+    private static final int MENU_STOP_SERVICE = 20;
 
     private MessagesSQLiteHelper msh;
 
@@ -33,6 +41,7 @@ public class UserFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -83,4 +92,34 @@ public class UserFragment extends Fragment {
         adapter.addAll(new UserSQLiteManage(getContext()).getUserMessagesToShow());
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // TODO Add your menu entries here
+
+        menu.add(Menu.NONE,MENU_START_SERVICE,Menu.NONE, "Start Message Detection");
+        menu.add(Menu.NONE,MENU_STOP_SERVICE,Menu.NONE, "Stop Message Detection");
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent serviceIntent;
+
+        switch (item.getItemId()) {
+            case MENU_START_SERVICE:
+                serviceIntent = new Intent(getActivity(), NotificationService.class);
+                serviceIntent.addCategory(NotificationService.TAG);
+                getActivity().startService(serviceIntent);
+                break;
+
+            case MENU_STOP_SERVICE:
+                serviceIntent = new Intent(getActivity(), NotificationService.class);
+                serviceIntent.addCategory(NotificationService.TAG);
+                getActivity().stopService(serviceIntent);
+                break;
+
+        }
+        return true;
+    }
 }

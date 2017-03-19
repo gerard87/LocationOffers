@@ -41,6 +41,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
 
     //Service status variables
     private static NotificationService instance = null;
+    public static final String TAG = "NotificationServiceTAG";
 
 
     // Google client to interact with Google API
@@ -63,6 +64,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
 
     @Override
     public void onCreate(){
+        showToast("Service Started");
         instance = this;
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
@@ -148,8 +150,12 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     @Override
     public void onDestroy()
     {
+        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
+            mGoogleApiClient.disconnect();
+        }
         instance = null;
-    }//met
+        showToast("Service Stopped");
+    }
 
 
     @Override

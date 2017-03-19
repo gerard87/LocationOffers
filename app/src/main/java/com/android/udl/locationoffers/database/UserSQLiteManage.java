@@ -66,16 +66,35 @@ public class UserSQLiteManage {
 
     public void insertMessage(UserMessage message){
         ContentValues newRegister = new ContentValues();
+        newRegister.put("_id",message.getId());
         newRegister.put("title",message.getTitle());
         newRegister.put("description",message.getDescription());
         newRegister.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
         newRegister.put("commerce_id", message.getCommerce_id());
         newRegister.put("shown", 1);
-        newRegister.put("used",1);
+        newRegister.put("used",0);
         newRegister.put("qrCode",BitmapUtils.bitmapToByteArray(message.getQrCode()));
 
         db.insert("UserMessages", null, newRegister);
     }
+
+    public boolean checkIfMessageIsUsedByID(int messageID){
+        String[] args = new String[] { String.valueOf(messageID) };
+
+        Cursor c = db.rawQuery("SELECT _id FROM UserMessages WHERE _id = ? AND used = 1",args);
+
+        return c.moveToFirst();
+    }
+
+    public void setMessageAsUsed(int messageID){
+        String[] args = new String[] { String.valueOf(messageID) };
+        ContentValues updateRegister = new ContentValues();
+
+        updateRegister.put("used",1);
+
+        db.update("UserMessages", updateRegister, "_id=?", args);
+    }
+
 
 
 }

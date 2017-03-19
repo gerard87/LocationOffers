@@ -80,7 +80,7 @@ public class UserFragment extends Fragment {
     private void read () {
         MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
         adapter.removeAll();
-        adapter.addAll(new DatabaseQueries("Messages", msh).getMessageDataFromDB());
+        adapter.addAll(new UserSQLiteManage(getContext()).getUserMessagesToShow());
     }
 
 }

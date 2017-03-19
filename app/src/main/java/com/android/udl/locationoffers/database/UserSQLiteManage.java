@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
 public class UserSQLiteManage {
 
     private Context context;
-    UserSQLiteHelper usdbh;
+    UserMessagesSQLiteHelper usdbh;
     SQLiteDatabase db;
 
     public UserSQLiteManage(Context context){
@@ -26,7 +27,7 @@ public class UserSQLiteManage {
     }
 
     public void initialization(){
-        usdbh = new UserSQLiteHelper(context, "DBUser", null, 1);
+        usdbh = new UserMessagesSQLiteHelper(context, "DBUser", null, 1);
         db = usdbh.getWritableDatabase();
     }
 
@@ -47,12 +48,13 @@ public class UserSQLiteManage {
         Cursor c = db.rawQuery("SELECT * FROM UserMessages;",null);
         if(c.moveToFirst()){
             do{
-                Message m = new Message(c.getInt(0),
+                Message m = new Message(
+                        c.getInt(0),
                         c.getString(1),
                         c.getString(2),
-                        //BitmapFactory.decodeByteArray(c.getBlob(3), 0 ,c.getBlob(3).length),
-                        null,
-                        c.getInt(4));
+                        BitmapUtils.byteArrayToBitmap(c.getBlob(3)),
+                        c.getInt(4),
+                        false);
                 messageList.add(m);
 
             }while(c.moveToNext());

@@ -10,16 +10,16 @@ public class Commerce {
 
     private int id;
     private String name;
-    private String placesID;
     private String password;
     private Bitmap image;
+    private String placesID;
 
-    public Commerce(int id, String name,String placesID, String password, Bitmap image) {
+    public Commerce(int id, String name, String password, Bitmap image, String placesID) {
         this.id = id;
         this.name = name;
-        this.placesID = placesID;
         this.password = password;
         this.image = image;
+        this.placesID = placesID;
     }
 
     public int getId() {

@@ -8,20 +8,24 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by ubuntu on 14/03/17.
  */
 
-public class UserSQLiteHelper extends SQLiteOpenHelper {
+public class UserMessagesSQLiteHelper extends SQLiteOpenHelper {
 
     StringBuilder sb = new StringBuilder("CREATE TABLE UserMessages")
-            .append("(_id INTEGER PRIMARY KEY, ")
+            .append("(_id INTEGER PRIMARY KEY AUTOINCREMENT, ")
+            .append("title TEXT, ")
+            .append("description TEXT, ")
+            .append("image BLOB, ")
+            .append("commerce_id INTEGER, ")
+
             .append("shown INTEGER, ")
             .append("used INTEGER, ")
-            .append("placeName TEXT, ")
-            .append("offerName TEXT, ")
-            .append("validUntil DATETIME, ")
-            .append("qrCode BLOB ")
+            .append("qrCode BLOB, ")
+            .append("FOREIGN KEY (commerce_id) REFERENCES Commerces(_id) ")
             .append(");");
 
-    public UserSQLiteHelper(Context context, String nombre,
-                            SQLiteDatabase.CursorFactory factory, int version){
+
+    public UserMessagesSQLiteHelper(Context context, String nombre,
+                                    SQLiteDatabase.CursorFactory factory, int version){
         super(context, nombre, factory, version);
     }
 

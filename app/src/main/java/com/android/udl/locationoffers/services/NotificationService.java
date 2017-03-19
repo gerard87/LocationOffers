@@ -15,6 +15,10 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.database.MessageSQLiteManage;
+import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
+import com.android.udl.locationoffers.database.UserSQLiteManage;
+import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
 import com.google.android.gms.common.ConnectionResult;
@@ -31,6 +35,7 @@ import com.google.android.gms.location.places.Places;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by ubuntu on 18/03/17.
@@ -229,6 +234,10 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             @Override
             public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
                 String allPlaces = "";
+                MessageSQLiteManage msql = new MessageSQLiteManage(getApplicationContext());
+                UserSQLiteManage usql = new UserSQLiteManage(getApplicationContext());
+
+                List<Message> messageList;
                 for (PlaceLikelihood placeLikelihood : likelyPlaces) {
 
                     if(!Collections.disjoint(placeLikelihood.getPlace().getPlaceTypes(),(interestList))){
@@ -237,13 +246,17 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                         "likelihood: %g, TYPE: '%s'",
                                 placeLikelihood.getPlace().getName(),
                                 placeLikelihood.getLikelihood(),placeLikelihood.getPlace().getPlaceTypes().toString()));
+                        messageList = msql.getMessagesByPlacesID(placeLikelihood.getPlace().getId());
+
+                        if(messageList != null){
+                            for(Message m : messageList){
+                                if(!usql.checkIfMessageExistByID(m.getId())){
+                                    //el missatge no existeix per tant s'ha de crear la notificacio
+                                }
+                            }
+                        }
                     }
                 }
-                /*Toast.makeText(getActivity(),"BROADCAST:Location changed!!!!",Toast.LENGTH_SHORT).show();
-
-                likelyPlaces.release();
-                Log.i("CALLPLACEDETECTIONAPI:","text view modificat");
-                tv1.setText(allPlaces);*/
                 likelyPlaces.release();
             }
         });

@@ -138,10 +138,6 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if( requestCode == PLACE_PICKER_REQUEST && resultCode == RESULT_OK ) {
-            PlacePicker.getPlace(intent, this);
-        }
-
         switch(requestCode) {
             case PICK_IMAGE:
                 if(resultCode == Activity.RESULT_OK){
@@ -162,7 +158,7 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
 
                 }break;
             case PLACE_PICKER_REQUEST:
-                if(intent != null){
+                if(resultCode == RESULT_OK && intent != null){
                     placesID = PlacePicker.getPlace(intent, this).getId();
                 }
 

@@ -10,12 +10,14 @@ public class Commerce {
 
     private int id;
     private String name;
+    private String placesID;
     private String password;
     private Bitmap image;
 
-    public Commerce(int id, String name, String password, Bitmap image) {
+    public Commerce(int id, String name,String placesID, String password, Bitmap image) {
         this.id = id;
         this.name = name;
+        this.placesID = placesID;
         this.password = password;
         this.image = image;
     }

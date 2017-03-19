@@ -14,6 +14,7 @@ import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
+import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.ItemClick;
 
@@ -50,9 +51,11 @@ public class UserFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
 
-        msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-        DatabaseQueries du = new DatabaseQueries("Messages", msh);
-        List<Message> messages = du.getMessageDataFromDB();
+        //msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
+        //DatabaseQueries du = new DatabaseQueries("Messages", msh);
+        //List<Message> messages = du.getMessageDataFromDB();
+        UserSQLiteManage userManage = new UserSQLiteManage(getContext());
+        List<Message> messages = userManage.getUserMessagesToShow();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
 

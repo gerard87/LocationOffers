@@ -34,9 +34,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -52,9 +50,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".LocationChangedReceiver" />
-        <service android:name=".NotificationService"></service>
+        <receiver android:name=".receiver.LocationChangedReceiver" />
 
+        <service android:name=".services.NotificationService" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

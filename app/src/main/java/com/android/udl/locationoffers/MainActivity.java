@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity
             startFragment(new LocationFragment(), TAG_LOCATION);
             title = "Location";
         }else if (id == R.id.nav_settings) {
-
+            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
         } else if (id == R.id.nav_help) {
 
         } else if (id == R.id.nav_logout) {

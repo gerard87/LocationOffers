@@ -1,4 +1,4 @@
-package com.android.udl.locationoffers;
+package com.android.udl.locationoffers.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,6 +1,5 @@
-package com.android.udl.locationoffers;
+package com.android.udl.locationoffers.services;
 
-import android.*;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;

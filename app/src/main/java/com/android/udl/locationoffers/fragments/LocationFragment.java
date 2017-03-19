@@ -1,14 +1,11 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,11 +19,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.udl.locationoffers.LocationChangedReceiver;
-import com.android.udl.locationoffers.Manifest;
-import com.android.udl.locationoffers.NotificationService;
+import com.android.udl.locationoffers.receiver.LocationChangedReceiver;
+import com.android.udl.locationoffers.services.NotificationService;
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.domain.PlaceInterest;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
 import com.google.android.gms.common.ConnectionResult;
@@ -36,15 +31,12 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 
 import static android.content.Context.MODE_PRIVATE;

@@ -21,6 +21,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.database.UserMessagesSQLiteHelper;
+import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
@@ -221,6 +223,15 @@ public class MainActivity extends AppCompatActivity
                 String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
                 Toast.makeText(this,contents,Toast.LENGTH_LONG).show();
                 // Handle successful scan
+                UserSQLiteManage userManager = new UserSQLiteManage(getApplicationContext());
+
+                int messageID = Integer.parseInt(contents.replace("USER",""));
+                if(userManager.checkIfMessageIsUsedByID(messageID)){
+                    Toast.makeText(getApplicationContext(),"codi no valid",Toast.LENGTH_SHORT).show();
+                }else{
+                    userManager.setMessageAsUsed(messageID);
+                    Toast.makeText(getApplicationContext(),"codi correcte",Toast.LENGTH_SHORT).show();
+                }
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
             }

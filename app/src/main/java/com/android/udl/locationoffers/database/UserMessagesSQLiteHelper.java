@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class UserMessagesSQLiteHelper extends SQLiteOpenHelper {
 
     StringBuilder sb = new StringBuilder("CREATE TABLE UserMessages")
-            .append("(_id, ")
+            .append("(_id INTEGER PRIMARY KEY, ")
             .append("title TEXT, ")
             .append("description TEXT, ")
             .append("image BLOB, ")

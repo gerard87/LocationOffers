@@ -67,8 +67,8 @@ public class UserSQLiteManage {
     public boolean checkIfMessageExistByID(int messageID){
         String[] args = new String[] { String.valueOf(messageID) };
 
-        Cursor c = db.rawQuery("SELECT _id FROM UserMessages WHERE commerce_id = ?",args);
-        return (c!=null && c.getCount()>0);
+        Cursor c = db.rawQuery("SELECT _id FROM UserMessages WHERE _id = ?;",args);
+        return c.moveToFirst();
     }
 
     public void insertMessage(UserMessage message){

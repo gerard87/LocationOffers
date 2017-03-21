@@ -30,6 +30,7 @@ import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
+import com.android.udl.locationoffers.services.NotificationService;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -194,6 +195,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_help) {
 
         } else if (id == R.id.nav_logout) {
+            stopLocationService();
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
             editor.apply();
@@ -213,6 +215,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void stopLocationService(){
+        if(NotificationService.isServiceRunning()){
+            Intent serviceIntent;
+            serviceIntent = new Intent(this, NotificationService.class);
+            serviceIntent.addCategory(NotificationService.TAG);
+            this.stopService(serviceIntent);
+        }
     }
 
 

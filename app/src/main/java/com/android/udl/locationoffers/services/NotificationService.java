@@ -72,8 +72,8 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
 
     // Location updates intervals in sec
     private static int UPDATE_INTERVAL = 20000; // 10 sec
-    private static int FASTEST_INTERVAL = 5000; // 5 sec
-    private static int DISPLACEMENT = 1; // 10 meters
+    private static int FASTEST_INTERVAL = 20000; // 5 sec
+    private static int DISPLACEMENT = 10; // 10 meters
 
 
     private static final int REQUEST_LOCATION = 2;
@@ -240,6 +240,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     }
 
     private void callPlaceDetectionApi() throws SecurityException {
+        showToast("nova posicio");
 
         PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                 .getCurrentPlace(mGoogleApiClient, null);

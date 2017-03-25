@@ -65,6 +65,18 @@
             android:text="Register"
             android:layout_marginTop="10dp"/>
 
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/button_google_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Google log in"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvuserlog"/>
+
 
     </LinearLayout>
 

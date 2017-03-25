@@ -31,6 +31,7 @@ import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
 import com.android.udl.locationoffers.services.NotificationService;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -199,6 +200,7 @@ public class MainActivity extends AppCompatActivity
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
             editor.apply();
+            FirebaseAuth.getInstance().signOut();
             startActivity(new Intent(getApplicationContext(), LoginActivity.class));
             finish();
         } else if (id == R.id.nav_exit) {

@@ -1,9 +1,11 @@
 package com.android.udl.locationoffers;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +32,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,9 +45,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         GoogleApiClient.OnConnectionFailedListener {
 
     private EditText et_user, et_pass;
-    private TextView textView;
     private SharedPreferences sharedPreferences;
     private Commerce commerce;
+    private String mode;
 
 
     // Firebase
@@ -51,6 +58,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private GoogleApiClient mGoogleApiClient;
     private GoogleSignInOptions gso;
 
+    private FirebaseDatabase db;
+    private DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +68,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         et_user = (EditText) findViewById(R.id.editText_login_user);
         et_pass = (EditText) findViewById(R.id.editText_login_pass);
-        textView = (TextView) findViewById(R.id.tvuserlog);
 
         Button btn = (Button) findViewById(R.id.button_login);
         Button btn_reg = (Button) findViewById(R.id.button_register);
@@ -110,12 +118,34 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+                final FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d("Google sign in", "onAuthStateChanged: Signed in");
-                    textView.setText("Signed in as "+user.getDisplayName());
-                    saveToSharedPreferencesAndStart(1,
-                            user.getDisplayName(), getString(R.string.commerce));
+
+                    reference = db.getReference("Users/"+user.getUid());
+
+                    reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                mode = dataSnapshot.getValue(String.class);
+                                saveToSharedPreferencesAndStart(1, user.getDisplayName(), mode);
+                            } else {
+                                selectMode(dataSnapshot, user.getDisplayName());
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+
+                    Toast.makeText(getApplicationContext(),
+                            "Signed in as "+user.getDisplayName(),
+                            Toast.LENGTH_SHORT)
+                            .show();
+
                 } else {
                     Log.d("Google sign in", "onAuthStateChanged: Signed out");
                 }
@@ -129,7 +159,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         btn_glogin.setOnClickListener(this);
 
-
+        db = FirebaseDatabase.getInstance();
 
     }
 
@@ -154,6 +184,32 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 signIn();
                 break;
         }
+    }
+
+    private void selectMode (final DataSnapshot dataSnapshot, final String username) {
+        CharSequence[] charSequence = new CharSequence[2];
+        charSequence[0] = "User";
+        charSequence[1] = "Commerce";
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select user mode")
+                .setItems(charSequence, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        Log.d("Mode", "User selected");
+                        mode = getString(R.string.user);
+                        break;
+                    case 1:
+                        Log.d("Mode", "Commerce selected");
+                        mode = getString(R.string.commerce);
+                        break;
+                }
+                dataSnapshot.getRef().setValue(mode);
+                saveToSharedPreferencesAndStart(1, username, mode);
+            }
+        });
+        builder.create().show();
     }
 
     private void signIn () {

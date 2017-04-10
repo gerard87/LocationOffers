@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,9 +15,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
 import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.domain.Commerce;
@@ -37,7 +40,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,6 +69,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private FirebaseDatabase db;
     private DatabaseReference reference;
+    private StorageReference imageReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +141,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 mode = dataSnapshot.getValue(String.class);
                                 saveToSharedPreferencesAndStart(1, user.getDisplayName(), mode);
                             } else {
-                                selectMode(dataSnapshot, user.getDisplayName());
+                                selectMode(dataSnapshot, user);
                             }
                         }
 
@@ -186,7 +196,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void selectMode (final DataSnapshot dataSnapshot, final String username) {
+    private void selectMode (final DataSnapshot dataSnapshot, final FirebaseUser user) {
+        final String username = user.getDisplayName();
         CharSequence[] charSequence = new CharSequence[2];
         charSequence[0] = "User";
         charSequence[1] = "Commerce";
@@ -203,6 +214,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     case 1:
                         Log.d("Mode", "Commerce selected");
                         mode = getString(R.string.commerce);
+                        uploadImage(user);
                         break;
                 }
                 dataSnapshot.getRef().setValue(mode);
@@ -210,6 +222,66 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             }
         });
         builder.create().show();
+    }
+
+    private void uploadImage (FirebaseUser user) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageReference =
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+        imageReference =
+                storageReference.child("user_images/"+user.getUid()+".png");
+
+        String url = user.getPhotoUrl().toString();
+        if (url != null) {
+            Log.d("Firebase Storage:", url);
+            new DownloadImageTask().execute(url);
+        }
+
+    }
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+
+            try {
+                return downloadImage(params[0]);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            imageReference.putBytes(BitmapUtils.bitmapToByteArray(result));
+        }
+    }
+
+
+    private Bitmap downloadImage(String myurl) throws IOException {
+        InputStream is = null;
+
+        try {
+            URL url = new URL(myurl);
+
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+
+            connection.connect();
+
+            int response = connection.getResponseCode();
+            Log.d("","The response is: "+response);
+
+            is = connection.getInputStream();
+            Bitmap image = BitmapFactory.decodeStream(is);
+
+            return image;
+
+        } finally {
+            if (is != null) is.close();
+        }
     }
 
     private void signIn () {

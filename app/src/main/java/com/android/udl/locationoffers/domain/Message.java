@@ -19,7 +19,12 @@ public class Message implements Parcelable{
     private int commerce_id;
     private boolean removed;
     private String commerce_name;
+    private String commerce_uid;
+    private String message_uid;
 
+    public Message () {
+
+    }
 
     public Message(int id, String title, String description, Bitmap image,
                    int commerce_id, boolean removed, String commerce_name) {
@@ -30,6 +35,16 @@ public class Message implements Parcelable{
         this.commerce_id = commerce_id;
         this.removed = removed;
         this.commerce_name = commerce_name;
+    }
+
+    public Message(String title, String description, String commerce_uid,
+                   String commerce_name, String message_uid) {
+        this.title = title;
+        this.description = description;
+        this.removed = false;
+        this.commerce_uid = commerce_uid;
+        this.commerce_name = commerce_name;
+        this.message_uid = message_uid;
     }
 
     protected Message(Parcel in) {
@@ -108,6 +123,22 @@ public class Message implements Parcelable{
 
     public void setCommerce_name(String commerce_name) {
         this.commerce_name = commerce_name;
+    }
+
+    public String getCommerce_uid() {
+        return commerce_uid;
+    }
+
+    public void setCommerce_uid(String commerce_uid) {
+        this.commerce_uid = commerce_uid;
+    }
+
+    public String getMessage_uid() {
+        return message_uid;
+    }
+
+    public void setMessage_uid(String message_uid) {
+        this.message_uid = message_uid;
     }
 
     @Override

@@ -1,15 +1,12 @@
 package com.android.udl.locationoffers.fragments;
 
-import android.content.ContentValues;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.os.AsyncTaskCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +16,17 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.domain.Message;
-
-import java.util.Arrays;
-import java.util.List;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class NewMessageFormFragment extends Fragment {
@@ -99,44 +98,82 @@ public class NewMessageFormFragment extends Fragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveToDatabase();
+                saveToFirebase();
             }
         });
     }
 
+    private void saveToFirebase () {
 
-    private void saveToDatabase () {
+        if (messageOk()) {
 
-        if (ed_title != null && ed_desc != null
-                && !ed_title.getText().toString().equals("")
-                && !ed_desc.toString().equals("")) {
-            ContentValues data = new ContentValues();
-            data.put("title", ed_title.getText().toString());
-            data.put("description", ed_desc.getText().toString());
+            FirebaseDatabase db = FirebaseDatabase.getInstance();
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
 
-            if (update) {
-                update (data);
-            } else {
-                save(data);
+                DatabaseReference ref = db.getReference(getString(R.string.messages))
+                        .child(user.getUid());
+
+
+                ref.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        hideKeyboard();
+
+                        Toast.makeText(getContext(), getString(R.string.message_db_ok),
+                                Toast.LENGTH_SHORT).show();
+                        CommerceFragment commerceFragment =
+                                CommerceFragment.newInstance("messages");
+                        startFragment(commerceFragment);
+                        mListener.onMessageAdded(getString(R.string.messages));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+                writeNewMessage(ref, user);
             }
 
+        } else {
+            Toast.makeText(getContext(), getString(R.string.field_error),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void writeNewMessage(DatabaseReference ref, FirebaseUser user) {
+        DatabaseReference msgref = ref.push();
+        Message message = new Message(ed_title.getText().toString(),
+                ed_desc.getText().toString(), user.getUid(),
+                user.getDisplayName(), msgref.getKey());
+        msgref.setValue(message);
+    }
+
+
+
+    private void hideKeyboard () {
+        Activity activity = getActivity();
+        if (activity != null) {
             InputMethodManager imm = (InputMethodManager)
                     getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-
-            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
-
-            Toast.makeText(getContext(), getString(R.string.message_db_ok), Toast.LENGTH_SHORT).show();
-
-
-            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
-            startFragment(commerceFragment);
-            mListener.onMessageAdded(getString(R.string.messages));
-
-        } else {
-            Toast.makeText(getContext(), getString(R.string.field_error), Toast.LENGTH_SHORT).show();
+            View view = getView();
+            if (view != null){
+                IBinder token = getView().getWindowToken();
+                if (token != null) imm.hideSoftInputFromWindow(token, 0);
+            }
         }
-
     }
+
+
+    private boolean messageOk () {
+        return ed_title != null && ed_desc != null
+                && !ed_title.getText().toString().equals("")
+                && !ed_desc.getText().toString().equals("");
+    }
+
 
     private void startFragment(Fragment fragment) {
         //Toast.makeText(this,fragment.toString(),Toast.LENGTH_SHORT).show();
@@ -147,50 +184,6 @@ public class NewMessageFormFragment extends Fragment {
                     .commit();
         }
     }
-
-    private void save (final ContentValues data) {
-
-        DatabaseQueries du = new DatabaseQueries("Commerces",csh);
-
-        List<String> fields = Arrays.asList("_id");
-        List<String> values = Arrays.asList(Integer.toString(sharedPreferences.getInt("id", -1)));
-
-        List<Commerce> commerces = du.getCommerceDataByFieldsFromDB(fields, values);
-
-        if (commerces != null && commerces.size() > 0) {
-            commerce = commerces.get(0);
-
-            data.put("image", BitmapUtils.bitmapToByteArray(commerce.getImage()));
-            data.put("commerce_id", commerce.getId());
-            data.put("commerce_name", commerce.getName());
-        }
-
-        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                SQLiteDatabase db = msh.getWritableDatabase();
-                db.insert("Messages", null, data);
-                return null;
-            }
-        });
-
-    }
-
-    private void update (final ContentValues data) {
-
-        AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                SQLiteDatabase db = msh.getWritableDatabase();
-                db.update("Messages", data, "_id = ?", new String[]{Integer.toString(id)});
-                return null;
-            }
-        });
-
-    }
-
-
-
 
     @Override
     public void onAttach(Context context) {
@@ -212,7 +205,5 @@ public class NewMessageFormFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         void onMessageAdded(String title);
     }
-
-
 
 }

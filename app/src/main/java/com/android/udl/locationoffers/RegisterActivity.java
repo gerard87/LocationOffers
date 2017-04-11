@@ -38,7 +38,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 
-public class RegisterCommerceActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+public class RegisterActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
 
     private GoogleApiClient mGoogleApiClient;
     private static final int PLACE_PICKER_REQUEST = 2;
@@ -121,6 +121,10 @@ public class RegisterCommerceActivity extends AppCompatActivity implements Googl
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void registerMailFirebase () {
+
     }
 
     private void saveToDatabase () {

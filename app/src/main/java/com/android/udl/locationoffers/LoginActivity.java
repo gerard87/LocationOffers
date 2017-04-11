@@ -26,6 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -76,6 +77,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        if (checkPlayServices()) {
+            configureGoogleSignIn();
+            configureGoogleApiClient();
+        }
+
         et_user = (EditText) findViewById(R.id.editText_login_user);
         et_pass = (EditText) findViewById(R.id.editText_login_pass);
 
@@ -118,7 +124,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         btn_reg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), RegisterCommerceActivity.class);
+                Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
                 startActivity(intent);
             }
         });
@@ -161,11 +167,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
         };
-
-
-
-        configureGoogleSignIn();
-        configureGoogleApiClient();
 
         btn_glogin.setOnClickListener(this);
 
@@ -293,7 +294,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-
         if (requestCode == RC_SIGN_IN) {
             Log.d("Google sign in", "onActivityResult ok");
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -388,5 +388,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("Google sign in", "Connection failed");
+    }
+
+
+    private boolean checkPlayServices () {
+        GoogleApiAvailability googleApi = GoogleApiAvailability.getInstance();
+        int result = googleApi.isGooglePlayServicesAvailable(this);
+        if (result != ConnectionResult.SUCCESS) {
+            if (googleApi.isUserResolvableError(result)) {
+                googleApi.getErrorDialog(this, result, 1).show();
+            }
+            return false;
+        }
+        return true;
     }
 }

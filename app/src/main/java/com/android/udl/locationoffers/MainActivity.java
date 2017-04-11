@@ -76,6 +76,9 @@ public class MainActivity extends AppCompatActivity
                     1);
         }
 
+        iv = (ImageView) navigationView.getHeaderView(0)
+                .findViewById(R.id.imageView);
+
         String mode = sharedPreferences.getString("mode", null);
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
@@ -88,14 +91,14 @@ public class MainActivity extends AppCompatActivity
             CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
             startFragment(commerceFragment, TAG_COMMERCE);
             setTitle(getString(R.string.messages));
+
+            downloadImage();
         }
 
         TextView tv = (TextView) navigationView.getHeaderView(0)
                 .findViewById(R.id.textView);
         tv.setText(sharedPreferences.getString("user", null));
-        iv = (ImageView) navigationView.getHeaderView(0)
-                .findViewById(R.id.imageView);
-        downloadImage();
+
 
 
     }

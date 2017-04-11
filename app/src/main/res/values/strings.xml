@@ -141,6 +141,10 @@
 
 
 
+    <string-array name="spinner_items">
+        <item>User</item>
+        <item>Commerce</item>
+    </string-array>
 
 
 

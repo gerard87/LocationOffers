@@ -1,32 +1,32 @@
 package com.android.udl.locationoffers;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
@@ -37,8 +37,22 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-public class RegisterActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+public class RegisterActivity extends AppCompatActivity
+        implements GoogleApiClient.OnConnectionFailedListener,
+        GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemSelectedListener{
 
     private GoogleApiClient mGoogleApiClient;
     private static final int PLACE_PICKER_REQUEST = 2;
@@ -48,12 +62,19 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
     private ImageView imageView;
     private EditText et_name, et_pass;
+    private TextView textViewFormImage;
     private Bitmap bitmap;
     private Button btn_img, btn_ok, btn_placesID;
-    private CommercesSQLiteHelper csh;
     private SharedPreferences sharedPreferences;
-    private long id;
     private String placesID;
+    private byte[] image;
+    private Spinner spinner;
+    private boolean isCommerce;
+
+    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseDatabase db;
+    private DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +83,13 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
         buildGoogleApiClient();
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance();
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-        csh = new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
 
         et_name = (EditText) findViewById(R.id.editText_register_name);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
@@ -75,8 +97,56 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         btn_ok = (Button) findViewById(R.id.button_register_ok);
         btn_placesID = (Button) findViewById(R.id.button_selectPlacesID);
         imageView = (ImageView) findViewById(R.id.image_form);
+        textViewFormImage = (TextView) findViewById(R.id.textView_form_image);
+
+        spinner = (Spinner) findViewById(R.id.mode_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this, R.array.spinner_items, android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
 
         sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                final FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    Log.d("Google sign in", "onAuthStateChanged: Signed in");
+
+                    reference = db.getReference("Users/"+user.getUid());
+
+                    reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (isCommerce) {
+                                reference.child("mode").setValue(getString(R.string.commerce));
+                                reference.child("place").setValue(placesID);
+                                uploadImage(user, image);
+                            } else {
+                                reference.child("mode").setValue(getString(R.string.user));
+                            }
+                            finish();
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+
+                    Toast.makeText(getApplicationContext(),
+                            "Signed in as "+user.getDisplayName(),
+                            Toast.LENGTH_SHORT)
+                            .show();
+
+                } else {
+                    Log.d("Google sign in", "onAuthStateChanged: Signed out");
+                }
+            }
+        };
 
         btn_img.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,7 +169,7 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveToDatabase();
+                registerMailFirebase();
             }
         });
 
@@ -124,38 +194,52 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private void registerMailFirebase () {
+        image = BitmapUtils.bitmapToByteArray(bitmap);
+
+        if (registerOk()) {
+            firebaseAuth.createUserWithEmailAndPassword(et_name.getText().toString(),
+                    et_pass.getText().toString())
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (!task.isSuccessful()) {
+                                Toast.makeText(getApplicationContext(), "Register failed",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Register successful",
+                                        Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                    });
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.field_error),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void uploadImage (FirebaseUser user, byte[] image) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageReference =
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+        StorageReference imageReference =
+                storageReference.child("user_images/"+user.getUid()+".png");
+
+        imageReference.putBytes(image);
 
     }
 
-    private void saveToDatabase () {
-        byte[] image = BitmapUtils.bitmapToByteArray(bitmap);
-
-        if (et_name != null && et_pass != null && image != null && placesID != null
-                && !et_name.getText().toString().equals("")
-                && !et_pass.toString().equals("")) {
-            ContentValues data = new ContentValues();
-            data.put("name", et_name.getText().toString());
-            data.put("placesID", placesID);
-            data.put("password", et_pass.getText().toString());
-            data.put("image", image);
-
-            save(data);
-
-
-            Toast.makeText(getApplicationContext(), "Registered succesfully", Toast.LENGTH_SHORT).show();
-
-            saveToSharedPreferencesAndStart((int)id, et_name.getText().toString(),
-                    getString(R.string.commerce));
-
-        } else {
-            Toast.makeText(getApplicationContext(), getString(R.string.field_error), Toast.LENGTH_SHORT).show();
+    private boolean registerOk () {
+        if (isCommerce){
+            return et_name != null && et_pass != null && image != null && placesID != null
+                    && !et_name.getText().toString().equals("")
+                    && !et_pass.toString().equals("");
         }
 
-    }
+        return et_name != null && et_pass != null
+                && !et_name.getText().toString().equals("")
+                && !et_pass.toString().equals("");
 
-    private void save (final ContentValues data) {
-        SQLiteDatabase db = csh.getWritableDatabase();
-        id = db.insert("Commerces", null, data);
     }
 
     @Override
@@ -203,11 +287,11 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
 
     //RELATED TO GOOGLE API
-
-
     private void displayPlacePicker() {
         if( mGoogleApiClient == null || !mGoogleApiClient.isConnected() )
             return;
+
+
 
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
@@ -221,7 +305,6 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private void buildGoogleApiClient(){
-        //--Snippet
         mGoogleApiClient = new GoogleApiClient
                 .Builder( this )
                 .enableAutoManage( this, 0, this )
@@ -237,12 +320,16 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
         super.onStart();
         if( mGoogleApiClient != null )
             mGoogleApiClient.connect();
+        firebaseAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     protected void onStop() {
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
+        }
+        if (mAuthListener != null) {
+            firebaseAuth.removeAuthStateListener(mAuthListener);
         }
         super.onStop();
     }
@@ -259,6 +346,28 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+        String item = parent.getItemAtPosition(position).toString();
+        if (item.equals(getString(R.string.user))) {
+            isCommerce = false;
+            btn_placesID.setVisibility(View.INVISIBLE);
+            btn_img.setVisibility(View.INVISIBLE);
+            textViewFormImage.setVisibility(View.INVISIBLE);
+        } else if (item.equals(getString(R.string.commerce))) {
+            isCommerce = true;
+            btn_placesID.setVisibility(View.VISIBLE);
+            btn_img.setVisibility(View.VISIBLE);
+            textViewFormImage.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
 
     }
 }

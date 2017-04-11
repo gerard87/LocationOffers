@@ -18,8 +18,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.domain.Commerce;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -48,15 +46,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
+import java.security.Provider;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,
         GoogleApiClient.OnConnectionFailedListener {
 
     private EditText et_user, et_pass;
     private SharedPreferences sharedPreferences;
-    private Commerce commerce;
     private String mode;
 
 
@@ -71,6 +67,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private FirebaseDatabase db;
     private DatabaseReference reference;
     private StorageReference imageReference;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +81,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         et_user = (EditText) findViewById(R.id.editText_login_user);
         et_pass = (EditText) findViewById(R.id.editText_login_pass);
+        firebaseAuth = FirebaseAuth.getInstance();
 
         Button btn = (Button) findViewById(R.id.button_login);
         Button btn_reg = (Button) findViewById(R.id.button_register);
@@ -105,19 +103,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (login(getString(R.string.user))) {
-                    saveToSharedPreferencesAndStart(1,"", getString(R.string.user));
-
-                } else if (loginCommerce()) {
-                    saveToSharedPreferencesAndStart(commerce.getId(),
-                            commerce.getName(), getString(R.string.commerce));
-
+                if (!fieldsBlank()) {
+                    firebaseAuth.signInWithEmailAndPassword(et_user.getText().toString(),
+                            et_pass.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (!task.isSuccessful()) {
+                                        Toast.makeText(getApplicationContext(), "Login failed",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                 } else {
-                    Toast.makeText(getApplicationContext(),
-                            "Username or password invalid!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Mail and pass cannot be empty",
+                            Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
@@ -137,15 +138,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 final FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d("Google sign in", "onAuthStateChanged: Signed in");
+                    final String name = user.getProviderId().equals(
+                            GoogleAuthProvider.PROVIDER_ID) ?
+                            user.getDisplayName() : user.getEmail();
 
-                    reference = db.getReference("Users/"+user.getUid());
+                    reference = db.getReference("Users").child(user.getUid()).child("mode");
 
                     reference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 mode = dataSnapshot.getValue(String.class);
-                                saveToSharedPreferencesAndStart(1, user.getDisplayName(), mode);
+                                saveToSharedPreferencesAndStart(1, name, mode);
                             } else {
                                 selectMode(dataSnapshot, user);
                             }
@@ -158,7 +162,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     });
 
                     Toast.makeText(getApplicationContext(),
-                            "Signed in as "+user.getDisplayName(),
+                            "Signed in as "+name,
                             Toast.LENGTH_SHORT)
                             .show();
 
@@ -172,6 +176,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         db = FirebaseDatabase.getInstance();
 
+    }
+
+    private boolean fieldsBlank () {
+        return et_user.getText().toString().equals("") || et_pass.getText().toString().equals("");
     }
 
     private void configureGoogleSignIn () {
@@ -342,31 +350,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
-    }
-
-    private boolean login (String s) {
-        return et_user.getText().toString().equals(s); //&& et_pass.getText().toString().equals(s);
-    }
-
-    private boolean loginCommerce () {
-
-        CommercesSQLiteHelper csh =
-                new CommercesSQLiteHelper(getApplicationContext(), "DBCommerces", null, 1);
-        DatabaseQueries databaseQueries = new DatabaseQueries("Commerces", csh);
-
-        String name = et_user.getText().toString();
-        String password = et_pass.getText().toString();
-
-        if (!name.equals("") && !password.equals("")) {
-            List<String> fields = Arrays.asList("name","password");
-            List<String> values = Arrays.asList(name, password);
-            List<Commerce> commerces = databaseQueries.getCommerceDataByFieldsFromDB(fields, values);
-            if (commerces != null && commerces.size() > 0) {
-                this.commerce = commerces.get(0);
-                return true;
-            }
-        }
-        return false;
     }
 
     private void saveToSharedPreferencesAndStart (int id, String name, String mode) {

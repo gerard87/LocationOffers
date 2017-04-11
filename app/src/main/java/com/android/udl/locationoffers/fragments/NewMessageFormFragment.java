@@ -2,7 +2,6 @@ package com.android.udl.locationoffers.fragments;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -16,9 +15,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
-import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.domain.Message;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,15 +29,11 @@ public class NewMessageFormFragment extends Fragment {
 
     private Button btn_ok;
     private EditText ed_title, ed_desc;
-    private int id;
-    private Commerce commerce;
 
     private boolean update = false;
 
-    private SharedPreferences sharedPreferences;
+    private Message message;
 
-    private MessagesSQLiteHelper msh;
-    private CommercesSQLiteHelper csh;
 
     private OnFragmentInteractionListener mListener;
 
@@ -74,51 +66,46 @@ public class NewMessageFormFragment extends Fragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        msh = new MessagesSQLiteHelper(view.getContext(), "DBMessages", null, 1);
-        csh = new CommercesSQLiteHelper(view.getContext(), "DBCommerces", null, 1);
-
-        sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-
         btn_ok = (Button) view.findViewById(R.id.button_form_ok);
         ed_title = (EditText) view.findViewById(R.id.editText_form_title);
         ed_desc = (EditText) view.findViewById(R.id.editText_form_description);
 
         Bundle args = getArguments();
         if (args != null && args.containsKey("message")) {
-            Message message = args.getParcelable("message");
+            message = args.getParcelable("message");
             ed_title.setText(message.getTitle());
             ed_desc.setText(message.getDescription());
-            id = message.getId();
             update = true;
         }
-
-
-
 
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveToFirebase();
+                saveOrUpdateFirebase();
             }
         });
     }
 
-    private void saveToFirebase () {
-
+    private void saveOrUpdateFirebase () {
         if (messageOk()) {
 
             FirebaseDatabase db = FirebaseDatabase.getInstance();
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
-
-                DatabaseReference ref = db.getReference(getString(R.string.messages))
-                        .child(user.getUid());
-
+                DatabaseReference ref;
+                if (update) {
+                    ref = db.getReference(getString(R.string.messages))
+                            .child(user.getUid()).child(message.getMessage_uid());
+                    updateFirebase(ref);
+                } else {
+                    ref = db.getReference(getString(R.string.messages))
+                            .child(user.getUid());
+                    saveToFirebase(ref, user);
+                }
 
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
                         hideKeyboard();
 
                         Toast.makeText(getContext(), getString(R.string.message_db_ok),
@@ -133,8 +120,6 @@ public class NewMessageFormFragment extends Fragment {
                     public void onCancelled(DatabaseError databaseError) {
                     }
                 });
-
-                writeNewMessage(ref, user);
             }
 
         } else {
@@ -144,7 +129,7 @@ public class NewMessageFormFragment extends Fragment {
     }
 
 
-    private void writeNewMessage(DatabaseReference ref, FirebaseUser user) {
+    private void saveToFirebase (DatabaseReference ref, FirebaseUser user) {
         DatabaseReference msgref = ref.push();
         Message message = new Message(ed_title.getText().toString(),
                 ed_desc.getText().toString(), user.getUid(),
@@ -152,7 +137,10 @@ public class NewMessageFormFragment extends Fragment {
         msgref.setValue(message);
     }
 
-
+    private void updateFirebase (DatabaseReference ref) {
+        ref.child("title").setValue(ed_title.getText().toString());
+        ref.child("description").setValue(ed_desc.getText().toString());
+    }
 
     private void hideKeyboard () {
         Activity activity = getActivity();

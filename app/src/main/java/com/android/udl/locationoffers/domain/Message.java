@@ -125,4 +125,16 @@ public class Message implements Parcelable{
         dest.writeInt(commerce_id);
         dest.writeString(commerce_name);
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", image=" + image +
+                ", commerce_id=" + commerce_id +
+                ", removed=" + removed +
+                '}';
+    }
 }

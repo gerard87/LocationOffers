@@ -1,14 +1,10 @@
 package com.android.udl.locationoffers.fragments;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.os.AsyncTaskCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,13 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
 import com.android.udl.locationoffers.database.RemovedCommerceSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MessageDetailFragment extends Fragment {
 
@@ -85,8 +83,7 @@ public class MessageDetailFragment extends Fragment {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    removeItem("MessagesCommerceRemoved");
-                    addToDB("Messages");
+                    moveFromXToY(false);
                 }
             });
         } else {
@@ -99,9 +96,6 @@ public class MessageDetailFragment extends Fragment {
                 }
             });
         }
-
-
-
 
     }
 
@@ -147,66 +141,51 @@ public class MessageDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_detail:
-                removeItem("Messages");
-                addToDB("MessagesCommerceRemoved");
+                moveFromXToY(true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void removeItem(final String dbName) {
+    private void moveFromXToY (boolean messagesToRemoved) {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        final SQLiteDatabase db;
-        String msg = "";
-        if (dbName.equals("MessagesCommerceRemoved")) {
-            db = rcsh.getWritableDatabase();
-        } else if (dbName.equals("Messages")){
-            msg = "Message id: " + Integer.toString(message.getId()) + " deleted!";
-            db = msh.getWritableDatabase();
-        } else {
-            db = null;
-        }
-        if (db != null) {
-            AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    db.delete(dbName, "_id=?", new String[]{String.valueOf(message.getId())});
-                    return null;
-                }
-            });
-            if (!msg.equals(""))Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-        }
+        removeFirebaseItem(db, user, getMode(messagesToRemoved));
+        addToY(db, user, getMode(!messagesToRemoved));
+
         getActivity().getSupportFragmentManager().popBackStack();
     }
 
-    private void addToDB (final String dbName) {
-        final ContentValues data = new ContentValues();
-        data.put("title", message.getTitle());
-        data.put("description", message.getDescription());
-        data.put("image", BitmapUtils.bitmapToByteArray(message.getImage()));
-        data.put("commerce_id", message.getCommerce_id());
-        data.put("commerce_name", message.getCommerce_name());
+    private String getMode (boolean messagesToRemoved) {
+        return messagesToRemoved ? getString(R.string.messages) : "Removed";
+    }
 
-        final SQLiteDatabase db;
-        String msg = "";
-        if (dbName.equals("MessagesCommerceRemoved")) {
-            db = rcsh.getWritableDatabase();
-        } else if (dbName.equals("Messages")){
-            msg = "Message id: " + Integer.toString(message.getId()) + " restored!";
-            db = msh.getWritableDatabase();
-        } else {
-            db = null;
-        }
-        if (db != null) {
-            AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    db.insert(dbName, null, data);
-                    return null;
-                }
-            });
-            if (!msg.equals(""))Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+    private void removeFirebaseItem (FirebaseDatabase db, FirebaseUser user, String mode) {
+        if (user != null) {
+            DatabaseReference ref = db.getReference(mode)
+                    .child(user.getUid())
+                    .child(message.getMessage_uid());
+            ref.removeValue();
+
         }
     }
+
+    private void addToY (FirebaseDatabase db, FirebaseUser user, String mode) {
+        if (user != null) {
+            DatabaseReference ref = db.getReference(mode)
+                    .child(user.getUid())
+                    .child(message.getMessage_uid());
+            if (mode.equals(getString(R.string.messages))){
+                message.setRemoved(false);
+            } else {
+                message.setRemoved(true);
+            }
+
+            message.setImage(null);
+            ref.setValue(message);
+        }
+    }
+
 }

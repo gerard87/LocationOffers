@@ -15,15 +15,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.udl.locationoffers.database.UserMessagesSQLiteHelper;
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.database.UserSQLiteManage;
-import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.fragments.CommerceFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
@@ -31,7 +29,11 @@ import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
 import com.android.udl.locationoffers.fragments.UserFragment;
 import com.android.udl.locationoffers.services.NotificationService;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -46,6 +48,8 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private SharedPreferences sharedPreferences;
     private boolean doubleBack = false;
+
+    private ImageView iv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,9 @@ public class MainActivity extends AppCompatActivity
                     1);
         }
 
+        iv = (ImageView) navigationView.getHeaderView(0)
+                .findViewById(R.id.imageView);
+
         String mode = sharedPreferences.getString("mode", null);
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
@@ -84,6 +91,8 @@ public class MainActivity extends AppCompatActivity
             CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
             startFragment(commerceFragment, TAG_COMMERCE);
             setTitle(getString(R.string.messages));
+
+            downloadImage();
         }
 
         TextView tv = (TextView) navigationView.getHeaderView(0)
@@ -91,6 +100,23 @@ public class MainActivity extends AppCompatActivity
         tv.setText(sharedPreferences.getString("user", null));
 
 
+
+    }
+
+    private void downloadImage () {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        StorageReference storageReference =
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+        StorageReference imageReference =
+                storageReference.child("user_images/"+user.getUid()+".png");
+        imageReference.getBytes(1024*1024).addOnSuccessListener(
+                new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
+            }
+        });
     }
 
     @Override

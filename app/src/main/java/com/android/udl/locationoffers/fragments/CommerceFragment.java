@@ -8,24 +8,31 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.adapters.MyAdapter;
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseQueries;
-import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-import com.android.udl.locationoffers.database.RemovedCommerceSQLiteHelper;
-import com.android.udl.locationoffers.domain.Commerce;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.ItemClick;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommerceFragment extends Fragment {
@@ -34,18 +41,15 @@ public class CommerceFragment extends Fragment {
     private FloatingActionMenu fab_menu;
     private FloatingActionButton fab_button;
 
-    private MessagesSQLiteHelper msh;
-    private RemovedCommerceSQLiteHelper rcsh;
-    private CommercesSQLiteHelper csh;
-
-    private String db_mode;
-
     private OnFragmentInteractionListener mListener;
 
     private SharedPreferences sharedPreferences;
 
-    private DatabaseQueries dq;
     private List<Message> messages;
+
+    private MyAdapter adapter;
+
+    private String db_mode;
 
     public static CommerceFragment newInstance(String string) {
         CommerceFragment fragment = new CommerceFragment();
@@ -54,6 +58,7 @@ public class CommerceFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
 
     public CommerceFragment() {
     }
@@ -88,20 +93,11 @@ public class CommerceFragment extends Fragment {
         mRecyclerView.setLayoutManager(llm);
 
         db_mode = getArguments().getString("db");
-        csh = new CommercesSQLiteHelper(getActivity(), "DBCommerces", null, 1);
-        if (db_mode != null && db_mode.equals("messages")) {
-            msh = new MessagesSQLiteHelper(getActivity(), "DBMessages", null, 1);
-            dq = new DatabaseQueries("Messages", msh, csh);
-        } else {
-            rcsh = new RemovedCommerceSQLiteHelper(getActivity(), "DBRemovedMessagesCommerce", null, 1);
-            dq = new DatabaseQueries("MessagesCommerceRemoved", rcsh, csh);
-            fab_menu.hideMenu(true);
-        }
 
-        selectMode();
-
+        if (messages == null) messages = new ArrayList<>();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
+        if (messages.size() == 0) read();
 
         /* Show/hide floating button*/
         fab_menu.setClosedOnTouchOutside(true);
@@ -137,25 +133,55 @@ public class CommerceFragment extends Fragment {
     }
 
     private void read () {
-        MyAdapter adapter = (MyAdapter) mRecyclerView.getAdapter();
-        adapter.removeAll();
-        selectMode();
-        adapter.addAll(messages);
+        String database;
+        if (db_mode.equals("messages")){
+            database = getString(R.string.messages);
+        } else {
+            database = "Removed";
+        }
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+             DatabaseReference ref =
+                     db.getReference(database).child(user.getUid());
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    adapter = (MyAdapter) mRecyclerView.getAdapter();
+                    adapter.removeAll();
+
+                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                        Log.d("COMMERCE","snapshot: " +
+                                postSnapshot.getValue(Message.class).getTitle());
+                        Message message = postSnapshot.getValue(Message.class);
+
+                        downloadImage(message);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        }
+
     }
 
-    private void selectMode () {
-        if (sharedPreferences.getString("mode", null).equals(getString(R.string.user))){
-            messages = dq.getMessageDataFromDB();
-        } else {
-            List<String> fields = Arrays.asList("commerce_id");
-            List<String> values = Arrays.asList(
-                    Integer.toString(sharedPreferences.getInt("id", -1)));
-            if (db_mode.equals("messages")) {
-                messages = dq.getMessagesDataByFieldsFromDB(fields, values);
-            } else {
-                messages = dq.getCommerceRemovedMessagesDataByFieldsFromDB(fields, values);
-            }
-        }
+    private void downloadImage (final Message message) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageReference =
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+        StorageReference imageReference =
+                storageReference.child("user_images/"+message.getCommerce_uid()+".png");
+        imageReference.getBytes(1024*1024).addOnSuccessListener(
+                new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
+                        adapter.add(message);
+                    }
+                });
     }
 
     private void startFragment(Fragment fragment) {

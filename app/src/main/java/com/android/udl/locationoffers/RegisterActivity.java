@@ -1,9 +1,7 @@
 package com.android.udl.locationoffers;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -30,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -65,7 +62,6 @@ public class RegisterActivity extends AppCompatActivity
     private TextView textViewFormImage;
     private Bitmap bitmap;
     private Button btn_img, btn_ok, btn_placesID;
-    private SharedPreferences sharedPreferences;
     private String placesID;
     private byte[] image;
     private Spinner spinner;
@@ -107,8 +103,6 @@ public class RegisterActivity extends AppCompatActivity
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -137,13 +131,6 @@ public class RegisterActivity extends AppCompatActivity
                         }
                     });
 
-                    Toast.makeText(getApplicationContext(),
-                            "Signed in as "+user.getDisplayName(),
-                            Toast.LENGTH_SHORT)
-                            .show();
-
-                } else {
-                    Log.d("Google sign in", "onAuthStateChanged: Signed out");
                 }
             }
         };
@@ -274,24 +261,11 @@ public class RegisterActivity extends AppCompatActivity
         }
     }
 
-    private void saveToSharedPreferencesAndStart (int id, String name, String mode) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("id", id);
-        editor.putString("user", name);
-        editor.putString("mode", mode);
-        editor.apply();
-
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-        finish();
-    }
-
 
     //RELATED TO GOOGLE API
     private void displayPlacePicker() {
         if( mGoogleApiClient == null || !mGoogleApiClient.isConnected() )
             return;
-
-
 
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 

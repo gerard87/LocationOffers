@@ -25,8 +25,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -46,7 +49,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.Provider;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,
         GoogleApiClient.OnConnectionFailedListener {
@@ -55,9 +57,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences sharedPreferences;
     private String mode;
 
-
-    // Firebase
     private static final int RC_SIGN_IN = 1;
+    private static final int PLACE_PICKER_REQUEST = 2;
+    private static final int USER = 0;
+    private static final int COMMERCE = 1;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -68,6 +71,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private DatabaseReference reference;
     private StorageReference imageReference;
     private FirebaseAuth firebaseAuth;
+    private FirebaseUser user;
+
+    private String placesID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,23 +141,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                final FirebaseUser user = firebaseAuth.getCurrentUser();
+                user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d("Google sign in", "onAuthStateChanged: Signed in");
                     final String name = user.getProviderId().equals(
                             GoogleAuthProvider.PROVIDER_ID) ?
                             user.getDisplayName() : user.getEmail();
 
-                    reference = db.getReference("Users").child(user.getUid()).child("mode");
+                    reference = db.getReference("Users").child(user.getUid());
 
                     reference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
-                                mode = dataSnapshot.getValue(String.class);
+                                mode = dataSnapshot.child("mode").getValue(String.class);
                                 saveToSharedPreferencesAndStart(1, name, mode);
                             } else {
-                                selectMode(dataSnapshot, user);
+                                selectMode(dataSnapshot);
                             }
                         }
 
@@ -205,8 +211,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void selectMode (final DataSnapshot dataSnapshot, final FirebaseUser user) {
-        final String username = user.getDisplayName();
+    private void selectMode (final DataSnapshot dataSnapshot) {
         CharSequence[] charSequence = new CharSequence[2];
         charSequence[0] = "User";
         charSequence[1] = "Commerce";
@@ -216,24 +221,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    case 0:
+                    case USER:
                         Log.d("Mode", "User selected");
                         mode = getString(R.string.user);
                         break;
-                    case 1:
+                    case COMMERCE:
                         Log.d("Mode", "Commerce selected");
                         mode = getString(R.string.commerce);
-                        uploadImage(user);
+                        uploadImage();
+                        displayPlacePicker();
                         break;
                 }
-                dataSnapshot.getRef().setValue(mode);
-                saveToSharedPreferencesAndStart(1, username, mode);
+                dataSnapshot.getRef().child("mode").setValue(mode);
+
             }
         });
         builder.create().show();
     }
 
-    private void uploadImage (FirebaseUser user) {
+    private void uploadImage () {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
                 storage.getReferenceFromUrl("gs://location-offers.appspot.com");
@@ -293,6 +299,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+
+    private void displayPlacePicker() {
+        if( mGoogleApiClient == null || !mGoogleApiClient.isConnected() )
+            return;
+
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        try {
+            startActivityForResult( builder.build( this ), PLACE_PICKER_REQUEST );
+        } catch ( GooglePlayServicesRepairableException e ) {
+            Log.d( "PlacesAPI Demo", "GooglePlayServicesRepairableException thrown" );
+        } catch ( GooglePlayServicesNotAvailableException e ) {
+            Log.d( "PlacesAPI Demo", "GooglePlayServicesNotAvailableException thrown" );
+        }
+    }
+
     private void signIn () {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -306,6 +328,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Log.d("Google sign in", "onActivityResult ok");
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
+
+        } else if (requestCode == PLACE_PICKER_REQUEST) {
+            if(resultCode == RESULT_OK && data != null){
+                placesID = PlacePicker.getPlace(data, this).getId();
+                reference.child("place").setValue(placesID);
+                saveToSharedPreferencesAndStart(1, user.getDisplayName(), mode);
+            }
         }
     }
 
@@ -341,12 +370,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStart() {
         super.onStart();
+        if( mGoogleApiClient != null )
+            mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
+            mGoogleApiClient.disconnect();
+        }
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }

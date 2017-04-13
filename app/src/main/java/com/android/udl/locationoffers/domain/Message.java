@@ -21,6 +21,7 @@ public class Message implements Parcelable{
     private String commerce_name;
     private String commerce_uid;
     private String message_uid;
+    private boolean used;//USER
 
     public Message () {
 
@@ -155,6 +156,7 @@ public class Message implements Parcelable{
         dest.writeByte((byte)(removed?1:0));
         dest.writeInt(commerce_id);
         dest.writeString(commerce_name);
+        dest.writeByte((byte)(used?1:0));
     }
 
     @Override

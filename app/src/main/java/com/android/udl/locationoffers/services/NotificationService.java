@@ -1,6 +1,5 @@
 package com.android.udl.locationoffers.services;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -8,11 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,14 +24,9 @@ import android.widget.Toast;
 
 import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.Utils.QRcodeCreator;
-import com.android.udl.locationoffers.database.MessageSQLiteManage;
-import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
-import com.android.udl.locationoffers.domain.UserMessage;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,7 +45,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +102,21 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
 
         // Building the GoogleApi client
         if (checkPlayServices()) {
+
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
 
 
             // Building the GoogleApi client
@@ -261,8 +268,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             @Override
             public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
                 String allPlaces = "";
-                MessageSQLiteManage msql = new MessageSQLiteManage(getApplicationContext());
-                UserSQLiteManage usql = new UserSQLiteManage(getApplicationContext());
 
                 for (PlaceLikelihood placeLikelihood : likelyPlaces) {
 
@@ -274,24 +279,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                 placeLikelihood.getLikelihood(),placeLikelihood.getPlace().getPlaceTypes().toString()));
 
                         getMessagesByPlacesID(placeLikelihood.getPlace().getId());
-
-                        /*if(messageList != null){
-                            for(Message m : messageList){
-                                if(!usql.checkIfMessageExistByID(m.getId())){
-                                    Bitmap qrCode;
-                                    try{
-                                        qrCode = QRcodeCreator.generateQrCode("USER"+m.getId());
-                                    }catch(WriterException e){
-                                        qrCode = BitmapFactory.decodeResource(getResources(), R.drawable.ic_domain_black_24dp);
-                                    }
-                                    UserMessage userMessage = new UserMessage(m.getId(), m.getTitle(), m.getDescription(),
-                                            m.getImage(),m.getCommerce_id(),true,false,qrCode);
-                                    usql.insertMessage(userMessage);
-                                    showToast("missatge insertat");
-                                    showNotification(userMessage);
-                                }
-                            }
-                        }*/
                     }
                 }
                 likelyPlaces.release();
@@ -307,6 +294,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     dataSnapshot.getRef().setValue(message);
+                    showNotification(message);
                 }
             }
 
@@ -375,8 +363,8 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
         });
     }
 
-    public void showNotification(UserMessage message){
-        NotificationCompat.Builder mBuilder =
+    public void showNotification(Message message){
+        /*NotificationCompat.Builder mBuilder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(this.getApplicationContext())
                         .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
                         .setContentTitle("LocationOffers")
@@ -386,7 +374,26 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =(NotificationManager) this.getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());*/
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
+                .setLargeIcon(message.getImage())
+                .setContentTitle("LocationOffers")
+                .setContentText(message.getTitle())
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pending);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0, notificationBuilder.build());
     }
 
     //call this method to know if service is running and should restart after some changes in types of places

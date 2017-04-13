@@ -1,7 +1,6 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -43,8 +42,6 @@ public class CommerceFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private SharedPreferences sharedPreferences;
-
     private List<Message> messages;
 
     private MyAdapter adapter;
@@ -82,8 +79,6 @@ public class CommerceFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
         fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
 
@@ -133,12 +128,8 @@ public class CommerceFragment extends Fragment {
     }
 
     private void read () {
-        String database;
-        if (db_mode.equals("messages")){
-            database = getString(R.string.messages);
-        } else {
-            database = "Removed";
-        }
+        String database = db_mode.equals("messages") ?
+                getString(R.string.messages) : "Removed";
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

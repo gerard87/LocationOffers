@@ -45,6 +45,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
@@ -68,6 +75,9 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
 
     private Location mLastLocation;
 
+    FirebaseDatabase db;
+    FirebaseUser user;
+
     ArrayList<Integer> interestList;
 
     // Location updates intervals in sec
@@ -85,6 +95,9 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     public void onCreate(){
         showToast("Service Started");
         instance = this;
+
+        db = FirebaseDatabase.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
         interestList = new ArrayList<>();
@@ -251,7 +264,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                 MessageSQLiteManage msql = new MessageSQLiteManage(getApplicationContext());
                 UserSQLiteManage usql = new UserSQLiteManage(getApplicationContext());
 
-                List<Message> messageList;
                 for (PlaceLikelihood placeLikelihood : likelyPlaces) {
 
                     if(!Collections.disjoint(placeLikelihood.getPlace().getPlaceTypes(),(interestList))){
@@ -261,9 +273,9 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                 placeLikelihood.getPlace().getName(),
                                 placeLikelihood.getLikelihood(),placeLikelihood.getPlace().getPlaceTypes().toString()));
 
-                        messageList = msql.getMessagesByPlacesID(placeLikelihood.getPlace().getId());
+                        getMessagesByPlacesID(placeLikelihood.getPlace().getId());
 
-                        if(messageList != null){
+                        /*if(messageList != null){
                             for(Message m : messageList){
                                 if(!usql.checkIfMessageExistByID(m.getId())){
                                     Bitmap qrCode;
@@ -279,12 +291,75 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                                     showNotification(userMessage);
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
                 likelyPlaces.release();
             }
         });
+    }
+
+    public void insertMessageIfNotReceived (final Message message) {
+        DatabaseReference umsgRef = db.getReference("User messages")
+                .child(user.getUid()).child(message.getMessage_uid());
+        umsgRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    dataSnapshot.getRef().setValue(message);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getMessagesByCommerceId (final String id) {
+        DatabaseReference msgRef = db.getReference("Messages").child(id);
+        msgRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    Message message = postSnapshot.getValue(Message.class);
+                    insertMessageIfNotReceived(message);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getMessagesByPlacesID (final String id) {
+        final DatabaseReference usersRef = db.getReference("Users");
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> commerce_id = new ArrayList<>();
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    if (postSnapshot.child("place").exists() &&
+                            postSnapshot.child("place").getValue().equals(id)) {
+                        commerce_id.add(postSnapshot.getKey());
+                    }
+                }
+                for (String cid: commerce_id) {
+                    Log.d("Messages By Place Id", cid);
+                    getMessagesByCommerceId(cid);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 

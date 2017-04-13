@@ -155,7 +155,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 mode = dataSnapshot.child("mode").getValue(String.class);
-                                saveToSharedPreferencesAndStart(1, name, mode);
+                                saveToSharedPreferencesAndStart(name, mode);
                             } else {
                                 selectMode(dataSnapshot);
                             }
@@ -333,7 +333,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(resultCode == RESULT_OK && data != null){
                 placesID = PlacePicker.getPlace(data, this).getId();
                 reference.child("place").setValue(placesID);
-                saveToSharedPreferencesAndStart(1, user.getDisplayName(), mode);
+                saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
             }
         }
     }
@@ -386,9 +386,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void saveToSharedPreferencesAndStart (int id, String name, String mode) {
+    private void saveToSharedPreferencesAndStart (String name, String mode) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("id", id);
         editor.putString("user", name);
         editor.putString("mode", mode);
         editor.apply();

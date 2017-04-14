@@ -84,16 +84,16 @@ public class MainActivity extends AppCompatActivity
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
             startFragment(new UserFragment(), TAG_USER);
-            setTitle(getString(R.string.messages));
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
             CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
             startFragment(commerceFragment, TAG_COMMERCE);
-            setTitle(getString(R.string.messages));
 
             downloadImage();
         }
+
+        setTitle(getString(R.string.messages));
 
         TextView tv = (TextView) navigationView.getHeaderView(0)
                 .findViewById(R.id.textView);

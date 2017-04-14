@@ -3,7 +3,6 @@ package com.android.udl.locationoffers.adapters;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
-import com.android.udl.locationoffers.database.DatabaseQueries;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.OnItemClickListener;
 
@@ -27,7 +24,6 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     private List<Message> mDataset;
     private OnItemClickListener listener;
-    private CommercesSQLiteHelper csh;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
@@ -55,7 +51,6 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                                                    int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.my_card_view, parent, false);
-        csh = new CommercesSQLiteHelper(parent.getContext(), "DBCommerces", null, 1);
         return new ViewHolder(v);
     }
 

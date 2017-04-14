@@ -15,8 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.udl.locationoffers.R;
-import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-import com.android.udl.locationoffers.database.RemovedCommerceSQLiteHelper;
 import com.android.udl.locationoffers.domain.Message;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,8 +25,6 @@ public class MessageDetailFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
     private Message message;
-    private MessagesSQLiteHelper msh;
-    private RemovedCommerceSQLiteHelper rcsh;
     private boolean removed;
 
     public MessageDetailFragment() {
@@ -59,9 +55,6 @@ public class MessageDetailFragment extends Fragment {
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        msh = new MessagesSQLiteHelper(view.getContext(), "DBMessages", null, 1);
-        rcsh = new RemovedCommerceSQLiteHelper(view.getContext(), "DBRemovedMessagesCommerce", null, 1);
 
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.edit_fab);
         ImageView imageView = (ImageView) view.findViewById(R.id.image_cv);

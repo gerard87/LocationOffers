@@ -14,14 +14,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.adapters.MyAdapter;
-import com.android.udl.locationoffers.database.DatabaseQueries;
-import com.android.udl.locationoffers.database.MessagesSQLiteHelper;
-import com.android.udl.locationoffers.database.UserSQLiteManage;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.listeners.ItemClick;
 import com.android.udl.locationoffers.services.NotificationService;
@@ -50,8 +46,6 @@ public class UserFragment extends Fragment {
 
     private static final int MENU_START_SERVICE = 10;
     private static final int MENU_STOP_SERVICE = 20;
-
-    private MessagesSQLiteHelper msh;
 
     public UserFragment() {
     }

@@ -5,7 +5,6 @@ package com.android.udl.locationoffers;
 import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,16 +15,12 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v4.app.NavUtils;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
-
-import com.android.udl.locationoffers.database.CommercesSQLiteHelper;
 
 import java.util.List;
 
@@ -160,7 +155,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class UserPreferenceFragment extends PreferenceFragment {
-        private CommercesSQLiteHelper csh;
         private EditTextPreference preferenceName;
         private EditTextPreference preferencePass;
 
@@ -175,8 +169,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             bindPreferenceSummaryToValue(preferenceName);
             bindPreferenceSummaryToValue(preferencePass);
-
-            csh = new CommercesSQLiteHelper(getContext(), "DBCommerces", null, 1);
 
             final SharedPreferences sharedPreferences =
                     getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
@@ -224,15 +216,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
 
         private void update (final ContentValues data, final int id) {
-
-            AsyncTaskCompat.executeParallel(new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    SQLiteDatabase db = csh.getWritableDatabase();
-                    db.update("Commerces", data, "_id = ?", new String[]{Integer.toString(id)});
-                    return null;
-                }
-            });
 
         }
 

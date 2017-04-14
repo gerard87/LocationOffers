@@ -39,6 +39,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,7 +59,7 @@ public class RegisterActivity extends AppCompatActivity
     private static final int PICK_IMAGE = 1;
 
     private ImageView imageView;
-    private EditText et_name, et_pass;
+    private EditText et_name, et_pass, et_mail;
     private TextView textViewFormImage;
     private Bitmap bitmap;
     private Button btn_img, btn_ok, btn_placesID;
@@ -88,6 +89,7 @@ public class RegisterActivity extends AppCompatActivity
         }
 
         et_name = (EditText) findViewById(R.id.editText_register_name);
+        et_mail = (EditText) findViewById(R.id.editText_register_mail);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
         btn_img = (Button) findViewById(R.id.button_form_image);
         btn_ok = (Button) findViewById(R.id.button_register_ok);
@@ -107,8 +109,14 @@ public class RegisterActivity extends AppCompatActivity
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 final FirebaseUser user = firebaseAuth.getCurrentUser();
+                final UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(et_name.getText().toString())
+                        .build();
+
                 if (user != null) {
                     Log.d("Google sign in", "onAuthStateChanged: Signed in");
+
+                    user.updateProfile(profileUpdates);
 
                     reference = db.getReference("Users/"+user.getUid());
 
@@ -119,6 +127,8 @@ public class RegisterActivity extends AppCompatActivity
                                 reference.child("mode").setValue(getString(R.string.commerce));
                                 reference.child("place").setValue(placesID);
                                 uploadImage(user, image);
+
+
                             } else {
                                 reference.child("mode").setValue(getString(R.string.user));
                             }
@@ -184,7 +194,7 @@ public class RegisterActivity extends AppCompatActivity
         image = BitmapUtils.bitmapToByteArray(bitmap);
 
         if (registerOk()) {
-            firebaseAuth.createUserWithEmailAndPassword(et_name.getText().toString(),
+            firebaseAuth.createUserWithEmailAndPassword(et_mail.getText().toString(),
                     et_pass.getText().toString())
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
@@ -218,12 +228,12 @@ public class RegisterActivity extends AppCompatActivity
 
     private boolean registerOk () {
         if (isCommerce){
-            return et_name != null && et_pass != null && image != null && placesID != null
-                    && !et_name.getText().toString().equals("")
+            return et_name != null && et_mail != null && et_pass != null && image != null
+                    && placesID != null && !et_name.getText().toString().equals("")
                     && !et_pass.toString().equals("");
         }
 
-        return et_name != null && et_pass != null
+        return et_name != null && et_mail != null && et_pass != null
                 && !et_name.getText().toString().equals("")
                 && !et_pass.toString().equals("");
 
@@ -248,6 +258,7 @@ public class RegisterActivity extends AppCompatActivity
 
 
                     bitmap = BitmapFactory.decodeFile(filePath);
+                    if (sizeOfBitmap() > 9999999) reduceSize();
 
                     imageView.setImageBitmap(bitmap);
 
@@ -259,6 +270,16 @@ public class RegisterActivity extends AppCompatActivity
 
                 break;
         }
+    }
+
+    private int sizeOfBitmap () {
+        return bitmap.getRowBytes() * bitmap.getHeight();
+    }
+
+    private void reduceSize () {
+        int nh = (int) ( bitmap.getHeight() * (512.0 / bitmap.getWidth()) );
+        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, 512, nh, true);
+        bitmap = scaled;
     }
 
 

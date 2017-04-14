@@ -144,9 +144,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d("Google sign in", "onAuthStateChanged: Signed in");
-                    final String name = user.getProviderId().equals(
-                            GoogleAuthProvider.PROVIDER_ID) ?
-                            user.getDisplayName() : user.getEmail();
 
                     reference = db.getReference("Users").child(user.getUid());
 
@@ -155,7 +152,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
                                 mode = dataSnapshot.child("mode").getValue(String.class);
-                                saveToSharedPreferencesAndStart(name, mode);
+                                saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
                             } else {
                                 selectMode(dataSnapshot);
                             }
@@ -167,10 +164,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
                     });
 
-                    Toast.makeText(getApplicationContext(),
-                            "Signed in as "+name,
-                            Toast.LENGTH_SHORT)
-                            .show();
+                    if (user.getDisplayName() != null)
+                        Toast.makeText(getApplicationContext(),
+                                "Signed in as "+user.getDisplayName(),
+                                Toast.LENGTH_SHORT)
+                                .show();
 
                 } else {
                     Log.d("Google sign in", "onAuthStateChanged: Signed out");

@@ -42,10 +42,18 @@ public class UserFragment extends Fragment {
     private MyAdapter adapter;
     private List<Message> messages;
 
-    private String db_mode = "messages";
+    private String db_mode;
 
     private static final int MENU_START_SERVICE = 10;
     private static final int MENU_STOP_SERVICE = 20;
+
+    public static UserFragment newInstance(String string) {
+        UserFragment fragment = new UserFragment();
+        Bundle args = new Bundle();
+        args.putString("db", string);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public UserFragment() {
     }
@@ -72,7 +80,7 @@ public class UserFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
 
-        //db_mode = getArguments().getString("db");
+        db_mode = getArguments().getString("db");
 
         if (messages == null) messages = new ArrayList<>();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
@@ -99,7 +107,7 @@ public class UserFragment extends Fragment {
 
     private void read () {
 
-        String database = db_mode.equals("messages") ? "User messages" : "user Removed";
+        String database = db_mode.equals("messages") ? "User messages" : "User removed";
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -113,7 +121,7 @@ public class UserFragment extends Fragment {
                     adapter.removeAll();
 
                     for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                        Log.d("COMMERCE","snapshot: " +
+                        Log.d("USER","snapshot: " +
                                 postSnapshot.getValue(Message.class).getTitle());
                         Message message = postSnapshot.getValue(Message.class);
 

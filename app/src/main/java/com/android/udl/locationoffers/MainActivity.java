@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
-            startFragment(new UserFragment(), TAG_USER);
+            UserFragment userFragment = UserFragment.newInstance("messages");
+            startFragment(userFragment, TAG_USER);
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
@@ -211,8 +212,13 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
-            startFragment(new UserFragment(), TAG_USER);
+            UserFragment userFragment = UserFragment.newInstance("messages");
+            startFragment(userFragment, TAG_USER);
             title = getString(R.string.messages);
+        } else if (id == R.id.nav_user_trash) {
+            UserFragment userFragment = UserFragment.newInstance("removed");
+            startFragment(userFragment, TAG_USER);
+            title = "Trash";
         } else if (id == R.id.nav_user_location) {
             startFragment(new LocationFragment(), TAG_LOCATION);
             title = "Location";

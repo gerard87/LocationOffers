@@ -1,6 +1,7 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -26,6 +27,7 @@ public class MessageDetailFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
     private Message message;
     private boolean removed;
+    private String mode;
 
     public MessageDetailFragment() {
         // Required empty public constructor
@@ -69,6 +71,10 @@ public class MessageDetailFragment extends Fragment {
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
         textView_name.setText(message.getCommerce_name());
+
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        mode = sharedPreferences.getString("mode", null);
 
         removed = message.isRemoved();
         if (removed) {
@@ -152,7 +158,9 @@ public class MessageDetailFragment extends Fragment {
     }
 
     private String getMode (boolean messagesToRemoved) {
-        return messagesToRemoved ? getString(R.string.messages) : "Removed";
+        return mode.equals(getString(R.string.commerce)) ?
+                (messagesToRemoved ? getString(R.string.messages) : "Removed") :
+                (messagesToRemoved ? "User messages" : "User removed");
     }
 
     private void removeFirebaseItem (FirebaseDatabase db, FirebaseUser user, String mode) {
@@ -170,11 +178,12 @@ public class MessageDetailFragment extends Fragment {
             DatabaseReference ref = db.getReference(mode)
                     .child(user.getUid())
                     .child(message.getMessage_uid());
-            if (mode.equals(getString(R.string.messages))){
-                message.setRemoved(false);
-            } else {
-                message.setRemoved(true);
-            }
+
+            message.setRemoved(
+                    !mode.equals(this.mode.equals(getString(R.string.commerce)) ?
+                            getString(R.string.messages) : "User messages")
+            );
+
 
             message.setImage(null);
             ref.setValue(message);

@@ -76,7 +76,13 @@ public class MessageDetailFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
         mode = sharedPreferences.getString("mode", null);
 
+
         removed = message.isRemoved();
+
+        if (mode.equals(getString(R.string.user)) && !removed) {
+            fab.setVisibility(View.INVISIBLE);
+        }
+
         if (removed) {
             fab.setImageResource(R.drawable.ic_restore_white_24dp);
             fab.setOnClickListener(new View.OnClickListener() {

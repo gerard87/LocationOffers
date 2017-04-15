@@ -305,6 +305,24 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
         });
     }
 
+    public void insertMessageIfNotRemoved (final Message message) {
+        DatabaseReference umsgRef = db.getReference("User removed")
+                .child(user.getUid()).child(message.getMessage_uid());
+        umsgRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    insertMessageIfNotReceived(message);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void getMessagesByCommerceId (final String id) {
         DatabaseReference msgRef = db.getReference("Messages").child(id);
         msgRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -312,7 +330,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     Message message = postSnapshot.getValue(Message.class);
-                    insertMessageIfNotReceived(message);
+                    insertMessageIfNotRemoved(message);
                 }
             }
 

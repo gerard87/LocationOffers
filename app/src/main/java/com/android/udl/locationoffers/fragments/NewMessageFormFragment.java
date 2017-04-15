@@ -110,9 +110,9 @@ public class NewMessageFormFragment extends Fragment {
 
                         Toast.makeText(getContext(), getString(R.string.message_db_ok),
                                 Toast.LENGTH_SHORT).show();
-                        CommerceFragment commerceFragment =
-                                CommerceFragment.newInstance("messages");
-                        startFragment(commerceFragment);
+                        ListFragment listFragment =
+                                ListFragment.newInstance("messages");
+                        startFragment(listFragment);
                         mListener.onMessageAdded(getString(R.string.messages));
                     }
 

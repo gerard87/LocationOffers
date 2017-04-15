@@ -88,6 +88,7 @@ public class MessageDetailFragment extends Fragment {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mListener.onRemovedMessage(true);
                     moveFromXToY(false);
                 }
             });
@@ -133,6 +134,7 @@ public class MessageDetailFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
         void onEditMessageDetail(String title);
+        void onRemovedMessage(boolean removed);
     }
 
     @Override
@@ -146,6 +148,7 @@ public class MessageDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_detail:
+                mListener.onRemovedMessage(true);
                 moveFromXToY(true);
                 return true;
             default:

@@ -1,6 +1,7 @@
 package com.android.udl.locationoffers.fragments;
 
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,9 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,8 +17,10 @@ import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.adapters.MyAdapter;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.ItemClick;
-import com.android.udl.locationoffers.services.NotificationService;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,57 +35,86 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class UserFragment extends Fragment {
+public class ListFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
-    private MyAdapter adapter;
+    private FloatingActionMenu fab_menu;
+    private FloatingActionButton fab_button;
+
+    private OnFragmentInteractionListener mListener;
+
     private List<Message> messages;
 
+    private MyAdapter adapter;
+
     private String db_mode;
+    private String mode;
 
-    private static final int MENU_START_SERVICE = 10;
-    private static final int MENU_STOP_SERVICE = 20;
-
-    public static UserFragment newInstance(String string) {
-        UserFragment fragment = new UserFragment();
+    public static ListFragment newInstance(String string) {
+        ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
         args.putString("db", string);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public UserFragment() {
+
+    public ListFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_user, container, false);
+        return inflater.inflate(R.layout.fragment_commerce, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
+
         mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
         mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        mode = sharedPreferences.getString("mode", null);
 
         db_mode = getArguments().getString("db");
 
         if (messages == null) messages = new ArrayList<>();
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
-        if (messages.size() == 0) read();
+        if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
+
+        /* Show/hide floating button*/
+        fab_menu.setClosedOnTouchOutside(true);
+        mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
+        /* /Show/hide floating button*/
+
+        fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fab_menu.close(false);
+                startFragment(new NewMessageFormFragment());
+                mListener.onFABNewMessageCommerce(getString(R.string.new_message));
+            }
+        });
+
+        if (mode.equals(getString(R.string.user))) fab_menu.setVisibility(View.INVISIBLE);
 
         /* Swipe down to refresh */
         final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
@@ -107,13 +136,15 @@ public class UserFragment extends Fragment {
 
     private void read () {
 
-        String database = db_mode.equals("messages") ? "User messages" : "User removed";
+        String database = mode.equals(getString(R.string.commerce)) ?
+                (db_mode.equals("messages") ? getString(R.string.messages) : "Removed") :
+                (db_mode.equals("messages") ? "User messages" : "User removed");
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            DatabaseReference ref =
-                    db.getReference(database).child(user.getUid());
+             DatabaseReference ref =
+                     db.getReference(database).child(user.getUid());
             ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -121,7 +152,7 @@ public class UserFragment extends Fragment {
                     adapter.removeAll();
 
                     for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                        Log.d("USER","snapshot: " +
+                        Log.d("COMMERCE","snapshot: " +
                                 postSnapshot.getValue(Message.class).getTitle());
                         Message message = postSnapshot.getValue(Message.class);
 
@@ -134,6 +165,7 @@ public class UserFragment extends Fragment {
                 }
             });
         }
+
     }
 
     private void downloadImage (final Message message) {
@@ -152,34 +184,46 @@ public class UserFragment extends Fragment {
                 });
     }
 
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // TODO Add your menu entries here
-
-        menu.add(Menu.NONE,MENU_START_SERVICE,Menu.NONE, "Start Message Detection");
-        menu.add(Menu.NONE,MENU_STOP_SERVICE,Menu.NONE, "Stop Message Detection");
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Intent serviceIntent;
-
-        switch (item.getItemId()) {
-            case MENU_START_SERVICE:
-                serviceIntent = new Intent(getActivity(), NotificationService.class);
-                serviceIntent.addCategory(NotificationService.TAG);
-                getActivity().startService(serviceIntent);
-                break;
-
-            case MENU_STOP_SERVICE:
-                serviceIntent = new Intent(getActivity(), NotificationService.class);
-                serviceIntent.addCategory(NotificationService.TAG);
-                getActivity().stopService(serviceIntent);
-                break;
-
+    private void startFragment(Fragment fragment) {
+        if (fragment != null){
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_main, fragment)
+                    .addToBackStack(null)
+                    .commit();
         }
-        return true;
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+
+    public interface OnFragmentInteractionListener {
+        void onFABNewMessageCommerce(String title);
+        boolean onReturnFromRemoved();
+    }
+
+    public boolean isFabOpened() {
+        return fab_menu.isOpened();
+    }
+    public void closeFab () {
+        fab_menu.close(true);
+    }
+
+
+
 }

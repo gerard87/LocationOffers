@@ -15,18 +15,18 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.fragments.CommerceFragment;
+import com.android.udl.locationoffers.fragments.ListFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
-import com.android.udl.locationoffers.fragments.UserFragment;
 import com.android.udl.locationoffers.services.NotificationService;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,7 +36,7 @@ import com.google.firebase.storage.StorageReference;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        CommerceFragment.OnFragmentInteractionListener,
+        ListFragment.OnFragmentInteractionListener,
         NewMessageFormFragment.OnFragmentInteractionListener,
         MessageDetailFragment.OnFragmentInteractionListener {
 
@@ -44,11 +44,18 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG_COMMERCE = "tag_commerce";
     private static final String TAG_LOCATION = "tag_location";
 
+    private static final int MENU_START_SERVICE = 10;
+    private static final int MENU_STOP_SERVICE = 20;
+
     private NavigationView navigationView;
     private SharedPreferences sharedPreferences;
     private boolean doubleBack = false;
 
     private ImageView iv;
+
+    private boolean removed = false;
+
+    private String mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,17 +85,17 @@ public class MainActivity extends AppCompatActivity
         iv = (ImageView) navigationView.getHeaderView(0)
                 .findViewById(R.id.imageView);
 
-        String mode = sharedPreferences.getString("mode", null);
+        mode = sharedPreferences.getString("mode", null);
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
-            UserFragment userFragment = UserFragment.newInstance("messages");
-            startFragment(userFragment, TAG_USER);
+            ListFragment listFragment = ListFragment.newInstance("messages");
+            startFragment(listFragment, TAG_COMMERCE);
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
-            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
-            startFragment(commerceFragment, TAG_COMMERCE);
+            ListFragment listFragment = ListFragment.newInstance("messages");
+            startFragment(listFragment, TAG_COMMERCE);
 
             downloadImage();
         }
@@ -125,9 +132,9 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            CommerceFragment commerceFragment = (CommerceFragment) getSupportFragmentManager().findFragmentByTag(TAG_COMMERCE);
-            if(commerceFragment != null && commerceFragment.isFabOpened()){
-                commerceFragment.closeFab();
+            ListFragment listFragment = (ListFragment) getSupportFragmentManager().findFragmentByTag(TAG_COMMERCE);
+            if(listFragment != null && listFragment.isFabOpened()){
+                listFragment.closeFab();
             } else {
                 if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                     if (backAction()) {
@@ -153,20 +160,7 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     private void startFragment(Fragment fragment, String tag) {
         //Toast.makeText(this,fragment.toString(),Toast.LENGTH_SHORT).show();
@@ -196,15 +190,15 @@ public class MainActivity extends AppCompatActivity
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_commerce_list) {
-            CommerceFragment commerceFragment = CommerceFragment.newInstance("messages");
-            startFragment(commerceFragment, TAG_COMMERCE);
+            ListFragment listFragment = ListFragment.newInstance("messages");
+            startFragment(listFragment, TAG_COMMERCE);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
-            CommerceFragment commerceFragment = CommerceFragment.newInstance("removed");
-            startFragment(commerceFragment, TAG_COMMERCE);
+            ListFragment listFragment = ListFragment.newInstance("removed");
+            startFragment(listFragment, TAG_COMMERCE);
             title = "Trash";
 
         } else if (id == R.id.nav_commerce_scanQR) {
@@ -212,12 +206,12 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
-            UserFragment userFragment = UserFragment.newInstance("messages");
-            startFragment(userFragment, TAG_USER);
+            ListFragment listFragment = ListFragment.newInstance("messages");
+            startFragment(listFragment, TAG_COMMERCE);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_trash) {
-            UserFragment userFragment = UserFragment.newInstance("removed");
-            startFragment(userFragment, TAG_USER);
+            ListFragment listFragment = ListFragment.newInstance("removed");
+            startFragment(listFragment, TAG_COMMERCE);
             title = "Trash";
         } else if (id == R.id.nav_user_location) {
             startFragment(new LocationFragment(), TAG_LOCATION);
@@ -314,5 +308,49 @@ public class MainActivity extends AppCompatActivity
     public void onEditMessageDetail(String title) {
         setTitle(title);
         checkItem(R.id.nav_commerce_new);
+    }
+
+    @Override
+    public void onRemovedMessage(boolean removed) {
+        this.removed = removed;
+    }
+
+    @Override
+    public boolean onReturnFromRemoved() {
+        boolean aux = removed;
+        removed = false;
+        return aux;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mode.equals(getString(R.string.user))) {
+            menu.add(Menu.NONE,MENU_START_SERVICE,Menu.NONE, "Start Message Detection");
+            menu.add(Menu.NONE,MENU_STOP_SERVICE,Menu.NONE, "Stop Message Detection");
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent serviceIntent;
+
+        switch (item.getItemId()) {
+            case MENU_START_SERVICE:
+                serviceIntent = new Intent(this, NotificationService.class);
+                serviceIntent.addCategory(NotificationService.TAG);
+                startService(serviceIntent);
+                break;
+
+            case MENU_STOP_SERVICE:
+                serviceIntent = new Intent(this, NotificationService.class);
+                serviceIntent.addCategory(NotificationService.TAG);
+                stopService(serviceIntent);
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

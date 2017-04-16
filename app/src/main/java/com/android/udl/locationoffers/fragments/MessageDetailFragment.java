@@ -2,10 +2,14 @@ package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,9 +25,21 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
+import static android.R.attr.width;
+import static android.R.id.content;
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.WHITE;
+import static android.support.v7.appcompat.R.attr.height;
 
 public class MessageDetailFragment extends Fragment {
 
+    private static final int WIDTH = 150;
     private OnFragmentInteractionListener mListener;
     private Message message;
     private boolean removed;
@@ -73,7 +89,19 @@ public class MessageDetailFragment extends Fragment {
         textView_description.setText(message.getDescription());
         textView_name.setText(message.getCommerce_name());
         if(message.isUsed() != null){
-            imageViewQR.setImageBitmap(message.getImage());
+            // this is a small sample use of the QRCodeEncoder class from zxing
+            try {
+
+                Bitmap bm = encodeAsBitmap("DEFAULTQR", getSizeWidth());
+
+                if(bm != null) {
+                    imageViewQR.setImageBitmap(bm);
+                }
+            } catch (WriterException e) {
+
+            }
+
+            //imageViewQR.setImageBitmap(message.getImage());
         }
 
 
@@ -108,6 +136,35 @@ public class MessageDetailFragment extends Fragment {
             });
         }
 
+    }
+
+    private Bitmap encodeAsBitmap(String str, int width) throws WriterException {
+        BitMatrix result;
+        try {
+            result = new MultiFormatWriter().encode(str,
+                    BarcodeFormat.QR_CODE, width, width, null);
+        } catch (IllegalArgumentException iae) {
+            // Unsupported format
+            return null;
+        }
+        int w = result.getWidth();
+        int h = result.getHeight();
+        int[] pixels = new int[w * h];
+        for (int y = 0; y < h; y++) {
+            int offset = y * w;
+            for (int x = 0; x < w; x++) {
+                pixels[offset + x] = result.get(x, y) ? BLACK : WHITE;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(pixels, 0, width, 0, 0, w, h);
+        return bitmap;
+    }
+
+    private int getSizeWidth(){
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        return displaymetrics.widthPixels;
     }
 
     private void startFragment(Fragment fragment) {

@@ -21,7 +21,7 @@ public class Message implements Parcelable{
     private String commerce_name;
     private String commerce_uid;
     private String message_uid;
-    private boolean used;//USER
+    private Boolean used;//USER
 
     public Message () {
 
@@ -141,6 +141,10 @@ public class Message implements Parcelable{
     public void setMessage_uid(String message_uid) {
         this.message_uid = message_uid;
     }
+
+    public Boolean isUsed() { return used;  }
+
+    public void setUsed(boolean used) { this.used = used; }
 
     @Override
     public int describeContents() {

@@ -82,6 +82,7 @@ public class MessageDetailFragment extends Fragment {
         TextView textView_description = (TextView) view.findViewById(R.id.description_detail);
         TextView textView_name = (TextView) view.findViewById(R.id.name_detail);
         ImageView imageViewQR = (ImageView) view.findViewById(R.id.image_qr);
+        TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
 
         Bundle args = getArguments();
 
@@ -92,18 +93,21 @@ public class MessageDetailFragment extends Fragment {
         textView_name.setText(message.getCommerce_name());
 
         if(message.isUsed() != null){
-            try {
+            if(message.isUsed().booleanValue() == true){
+                textView_used.setVisibility(View.VISIBLE);
+            }else{
+                try {
+                    String toEncode = user.getUid()+"::"+message.getMessage_uid();
+                    Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
+                    if(bm != null) {
+                        imageViewQR.setImageBitmap(bm);
+                    }
 
-                String toEncode = user.getUid()+"::"+message.getMessage_uid();
+                } catch (WriterException e) {
 
-                Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
-
-                if(bm != null) {
-                    imageViewQR.setImageBitmap(bm);
                 }
-            } catch (WriterException e) {
-
             }
+
         }
 
 

@@ -81,6 +81,17 @@
             android:layout_height="wrap_content"
             app:srcCompat="@color/cardview_light_background" />
 
+        <TextView
+            android:id="@+id/usedCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/MESSAGE_ALREADY_USED"
+            android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:textColor="@color/zxing_viewfinder_laser"
+            android:textStyle="bold"
+            android:visibility="invisible"
+            tools:text="@string/MESSAGE_ALREADY_USED" />
+
     </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>

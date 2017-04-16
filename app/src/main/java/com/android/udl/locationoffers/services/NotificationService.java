@@ -260,7 +260,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     }
 
     private void callPlaceDetectionApi() throws SecurityException {
-        showToast("nova posicio");
 
         PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi
                 .getCurrentPlace(mGoogleApiClient, null);
@@ -330,6 +329,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     Message message = postSnapshot.getValue(Message.class);
+                    message.setUsed(false);
                     insertMessageIfNotRemoved(message);
                 }
             }
@@ -382,17 +382,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     }
 
     public void showNotification(Message message){
-        /*NotificationCompat.Builder mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this.getApplicationContext())
-                        .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
-                        .setContentTitle("LocationOffers")
-                        .setContentText(message.getTitle() + ": " + message.getDescription())
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        int mNotificationId = message.getId();
-        // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =(NotificationManager) this.getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
-        // Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());*/
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

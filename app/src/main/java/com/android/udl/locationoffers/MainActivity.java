@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
+import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.fragments.ListFragment;
 import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
@@ -31,6 +32,11 @@ import com.android.udl.locationoffers.services.NotificationService;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -39,6 +45,9 @@ public class MainActivity extends AppCompatActivity
         ListFragment.OnFragmentInteractionListener,
         NewMessageFormFragment.OnFragmentInteractionListener,
         MessageDetailFragment.OnFragmentInteractionListener {
+
+
+    FirebaseDatabase db;
 
     private static final String TAG_USER = "tag_user";
     private static final String TAG_COMMERCE = "tag_commerce";
@@ -63,6 +72,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        db = FirebaseDatabase.getInstance();
 
         sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
 
@@ -259,7 +270,20 @@ public class MainActivity extends AppCompatActivity
             if (resultCode == RESULT_OK) {
                 String contents = intent.getStringExtra("SCAN_RESULT");
                 String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-                Toast.makeText(this,contents,Toast.LENGTH_LONG).show();
+
+                try{
+                    String user = contents.split("::")[0];
+                    String messageId = contents.split("::")[1];
+
+                    setMessageAsUsed(user, messageId);
+                }catch (ArrayIndexOutOfBoundsException e){
+                    Toast.makeText(getApplicationContext(),
+                            getResources().getIdentifier("MESSAGE_INVALID",
+                                    "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                }
+
+
+
                 // Handle successful scan
                 /*UserSQLiteManage userManager = new UserSQLiteManage(getApplicationContext());
 
@@ -274,6 +298,37 @@ public class MainActivity extends AppCompatActivity
                 // Handle cancel
             }
         }
+    }
+
+    public void setMessageAsUsed (final String user, final String messageId) {
+        DatabaseReference umsgRef = db.getReference("User messages")
+                .child(user).child(messageId);
+        umsgRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Message message = dataSnapshot.getValue(Message.class);
+                    if(message.isUsed()){
+                        Toast.makeText(getApplicationContext(),
+                                getResources().getIdentifier("MESSAGE_ALREADY_USED",
+                                        "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                    }else{
+                        message.setUsed(true);
+                        dataSnapshot.getRef().setValue(message);
+                        Toast.makeText(getApplicationContext(),
+                                getResources().getIdentifier("MESSAGE_NOT_USED",
+                                        "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

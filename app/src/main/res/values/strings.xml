@@ -134,6 +134,10 @@
     <string name="TYPE_VETERINARY_CARE">Veterinary Care</string>
     <string name="TYPE_ZOO">Zoo</string>
 
+    <string name="MESSAGE_ALREADY_USED">This message has been used yet</string>
+    <string name="MESSAGE_NOT_USED">This message is valid ;)</string>
+    <string name="MESSAGE_INVALID">INVALID CODE</string>
+
 
     <string name="title_activity_settings">Settings</string>
     <string name="pref_title_display_name">Username</string>

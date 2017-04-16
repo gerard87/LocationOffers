@@ -39,11 +39,12 @@ import static android.support.v7.appcompat.R.attr.height;
 
 public class MessageDetailFragment extends Fragment {
 
-    private static final int WIDTH = 150;
     private OnFragmentInteractionListener mListener;
     private Message message;
     private boolean removed;
     private String mode;
+
+    FirebaseUser user;
 
     public MessageDetailFragment() {
         // Required empty public constructor
@@ -60,6 +61,7 @@ public class MessageDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        user = FirebaseAuth.getInstance().getCurrentUser();
         setHasOptionsMenu(true);
     }
 
@@ -88,11 +90,13 @@ public class MessageDetailFragment extends Fragment {
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
         textView_name.setText(message.getCommerce_name());
+
         if(message.isUsed() != null){
-            // this is a small sample use of the QRCodeEncoder class from zxing
             try {
 
-                Bitmap bm = encodeAsBitmap("DEFAULTQR", getSizeWidth());
+                String toEncode = user.getUid()+"::"+message.getMessage_uid();
+
+                Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
 
                 if(bm != null) {
                     imageViewQR.setImageBitmap(bm);
@@ -100,10 +104,7 @@ public class MessageDetailFragment extends Fragment {
             } catch (WriterException e) {
 
             }
-
-            //imageViewQR.setImageBitmap(message.getImage());
         }
-
 
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);

@@ -118,6 +118,11 @@ public class MainActivity extends AppCompatActivity
                 .findViewById(R.id.textView);
         tv.setText(sharedPreferences.getString("user", null));
 
+        Message message = getIntent().getParcelableExtra("Message");
+        if(message != null){
+            MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+            startFragmentBackStack(messageDetailFragment);
+        }
 
 
     }
@@ -144,12 +149,7 @@ public class MainActivity extends AppCompatActivity
         setIntent(intent);
 
         Message message = intent.getExtras().getParcelable("Message");
-
-        Log.i("MAINACTIVITY: ",message.getDescription());
-
-
         MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
-
         startFragmentBackStack(messageDetailFragment);
     }
 

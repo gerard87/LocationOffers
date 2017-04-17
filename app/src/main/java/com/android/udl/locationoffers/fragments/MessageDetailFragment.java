@@ -20,11 +20,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.udl.locationoffers.R;
+import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -87,7 +91,13 @@ public class MessageDetailFragment extends Fragment {
         Bundle args = getArguments();
 
         message = args.getParcelable("Message");
-        imageView.setImageBitmap(message.getImage());
+
+        if(message.getImage() != null){
+            imageView.setImageBitmap(message.getImage());
+        }else{
+            setCommerceImageByID(message.getCommerce_uid(),imageView);
+        }
+
         textView_title.setText(message.getTitle());
         textView_description.setText(message.getDescription());
         textView_name.setText(message.getCommerce_name());
@@ -141,6 +151,23 @@ public class MessageDetailFragment extends Fragment {
             });
         }
 
+    }
+
+
+    private void setCommerceImageByID (String commerceID, final ImageView iv) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        StorageReference storageReference =
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+        StorageReference imageReference =
+                storageReference.child("user_images/"+commerceID+".png");
+        imageReference.getBytes(1024*1024).addOnSuccessListener(
+                new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
+                    }
+                });
     }
 
     private Bitmap encodeAsBitmap(String str, int width) throws WriterException {

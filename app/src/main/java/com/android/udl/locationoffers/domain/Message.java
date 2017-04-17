@@ -56,6 +56,9 @@ public class Message implements Parcelable{
         commerce_id = in.readInt();
         removed = in.readByte()!=0;
         commerce_name = in.readString();
+        commerce_uid = in.readString();
+        message_uid = in.readString();
+        used = in.readByte()!=0;
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {
@@ -153,14 +156,16 @@ public class Message implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
         dest.writeString(title);
         dest.writeString(description);
         dest.writeByteArray(BitmapUtils.bitmapToByteArray(image));
-        dest.writeInt(id);
-        dest.writeByte((byte)(removed?1:0));
         dest.writeInt(commerce_id);
+        dest.writeByte((byte)(removed?1:0));
         dest.writeString(commerce_name);
-        dest.writeByte((byte)(used?1:0));
+        dest.writeString(commerce_uid);
+        dest.writeString(message_uid);
+        dest.writeByte((byte)(used.booleanValue()?1:0));
     }
 
     @Override

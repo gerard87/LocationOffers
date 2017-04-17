@@ -15,6 +15,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -135,6 +136,21 @@ public class MainActivity extends AppCompatActivity
                 iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
             }
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        Message message = intent.getExtras().getParcelable("Message");
+
+        Log.i("MAINACTIVITY: ",message.getDescription());
+
+
+        MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+
+        startFragmentBackStack(messageDetailFragment);
     }
 
     @Override

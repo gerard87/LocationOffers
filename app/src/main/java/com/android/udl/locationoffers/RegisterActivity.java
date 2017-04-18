@@ -48,6 +48,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import static android.graphics.Bitmap.createScaledBitmap;
+
 public class RegisterActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemSelectedListener{
@@ -57,6 +59,13 @@ public class RegisterActivity extends AppCompatActivity
 
     private static final int PERMISSION_EXTERNAL_STORAGE = 1;
     private static final int PICK_IMAGE = 1;
+
+    private static final String STATE_NAME = "name";
+    private static final String STATE_MAIL = "mail";
+    private static final String STATE_PASS = "pass";
+    private static final String STATE_SPINNER = "spinner";
+    private static final String STATE_IMAGE = "image";
+    private static final String STATE_PLACE = "place";
 
     private ImageView imageView;
     private EditText et_name, et_pass, et_mail;
@@ -191,7 +200,6 @@ public class RegisterActivity extends AppCompatActivity
     }
 
     private void registerMailFirebase () {
-        image = BitmapUtils.bitmapToByteArray(bitmap);
 
         if (registerOk()) {
             firebaseAuth.createUserWithEmailAndPassword(et_mail.getText().toString(),
@@ -261,6 +269,7 @@ public class RegisterActivity extends AppCompatActivity
                     if (sizeOfBitmap() > 9999999) reduceSize();
 
                     imageView.setImageBitmap(bitmap);
+                    image = BitmapUtils.bitmapToByteArray(bitmap);
 
                 }break;
             case PLACE_PICKER_REQUEST:
@@ -278,8 +287,7 @@ public class RegisterActivity extends AppCompatActivity
 
     private void reduceSize () {
         int nh = (int) ( bitmap.getHeight() * (512.0 / bitmap.getWidth()) );
-        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, 512, nh, true);
-        bitmap = scaled;
+        bitmap = createScaledBitmap(bitmap, 512, nh, true);
     }
 
 
@@ -363,6 +371,41 @@ public class RegisterActivity extends AppCompatActivity
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putString(STATE_NAME, et_name.getText().toString());
+        savedInstanceState.putString(STATE_MAIL, et_mail.getText().toString());
+        savedInstanceState.putString(STATE_PASS, et_pass.getText().toString());
+        savedInstanceState.putInt(STATE_SPINNER, spinner.getSelectedItemPosition());
+        savedInstanceState.putString(STATE_PLACE, placesID);
+        savedInstanceState.putByteArray(STATE_IMAGE, image);
+
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String s = savedInstanceState.getString(STATE_NAME);
+        if (s != null) et_name.setText(s);
+        s = savedInstanceState.getString(STATE_MAIL);
+        if (s != null) et_mail.setText(s);
+        s = savedInstanceState.getString(STATE_PASS);
+        if (s != null) et_pass.setText(s);
+        spinner.setSelection(savedInstanceState.getInt(STATE_SPINNER, 0));
+        s = savedInstanceState.getString(STATE_PLACE);
+        if (s != null) placesID = s;
+
+        byte[] b = savedInstanceState.getByteArray(STATE_IMAGE);
+        if (b != null) {
+            image = b;
+            bitmap = BitmapUtils.byteArrayToBitmap(image);
+            imageView.setImageBitmap(bitmap);
+        }
+
 
     }
 }

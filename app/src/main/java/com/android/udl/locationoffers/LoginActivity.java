@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
-import com.android.udl.locationoffers.domain.Commerce;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -61,6 +60,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final int PLACE_PICKER_REQUEST = 2;
     private static final int USER = 0;
     private static final int COMMERCE = 1;
+
+    private static final String STATE_USER = "user";
+    private static final String STATE_PASS = "pass";
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -415,5 +417,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Save the user's current game state
+        savedInstanceState.putString(STATE_USER, et_user.getText().toString());
+        savedInstanceState.putString(STATE_PASS, et_pass.getText().toString());
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        et_user.setText(savedInstanceState.getString(STATE_USER));
+        et_pass.setText(savedInstanceState.getString(STATE_PASS));
     }
 }

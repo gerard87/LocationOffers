@@ -15,7 +15,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity
 
     FirebaseDatabase db;
 
-    private static final String TAG_USER = "tag_user";
     private static final String TAG_COMMERCE = "tag_commerce";
     private static final String TAG_LOCATION = "tag_location";
 
@@ -98,32 +96,33 @@ public class MainActivity extends AppCompatActivity
                 .findViewById(R.id.imageView);
 
         mode = sharedPreferences.getString("mode", null);
-        if (mode.equals(getString(R.string.user))) {
-            navigationView.inflateMenu(R.menu.drawer_user);
-            navigationView.inflateMenu(R.menu.drawer);
-            ListFragment listFragment = ListFragment.newInstance("messages");
-            startFragment(listFragment, TAG_COMMERCE);
-        } else {
-            navigationView.inflateMenu(R.menu.drawer_commerce);
-            navigationView.inflateMenu(R.menu.drawer);
-            ListFragment listFragment = ListFragment.newInstance("messages");
-            startFragment(listFragment, TAG_COMMERCE);
+        if (savedInstanceState == null) {
+            if (mode.equals(getString(R.string.user))) {
+                navigationView.inflateMenu(R.menu.drawer_user);
+                navigationView.inflateMenu(R.menu.drawer);
+                ListFragment listFragment = ListFragment.newInstance("messages");
+                startFragment(listFragment, TAG_COMMERCE);
+            } else {
+                navigationView.inflateMenu(R.menu.drawer_commerce);
+                navigationView.inflateMenu(R.menu.drawer);
+                ListFragment listFragment = ListFragment.newInstance("messages");
+                startFragment(listFragment, TAG_COMMERCE);
 
-            downloadImage();
+                downloadImage();
+            }
+
+            setTitle(getString(R.string.messages));
+
+            TextView tv = (TextView) navigationView.getHeaderView(0)
+                    .findViewById(R.id.textView);
+            tv.setText(sharedPreferences.getString("user", null));
+
+            Message message = getIntent().getParcelableExtra("Message");
+            if(message != null){
+                MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+                startFragmentBackStack(messageDetailFragment);
+            }
         }
-
-        setTitle(getString(R.string.messages));
-
-        TextView tv = (TextView) navigationView.getHeaderView(0)
-                .findViewById(R.id.textView);
-        tv.setText(sharedPreferences.getString("user", null));
-
-        Message message = getIntent().getParcelableExtra("Message");
-        if(message != null){
-            MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
-            startFragmentBackStack(messageDetailFragment);
-        }
-
 
     }
 

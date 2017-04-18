@@ -37,6 +37,8 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
 
+    private static final String STATE_LIST = "Adapter data";
+
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
     private FloatingActionButton fab_button;
@@ -94,10 +96,15 @@ public class ListFragment extends Fragment {
 
         db_mode = getArguments().getString("db");
 
-        if (messages == null) messages = new ArrayList<>();
+        if (savedInstanceState == null) {
+            if (messages == null) messages = new ArrayList<>();
+        } else {
+            messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
+        }
         MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
         if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
+
 
         /* Show/hide floating button*/
         fab_menu.setClosedOnTouchOutside(true);
@@ -218,10 +225,16 @@ public class ListFragment extends Fragment {
     }
 
     public boolean isFabOpened() {
-        return fab_menu.isOpened();
+        return fab_menu != null && fab_menu.isOpened();
     }
     public void closeFab () {
         fab_menu.close(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(STATE_LIST, (ArrayList<Message>)messages);
     }
 
 

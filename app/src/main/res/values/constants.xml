@@ -1,2 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="TRANS_NAME_MESSAGEIMAGE">messageImage</string>
+    <string name="TRANS_NAME_MESSAGETITLE">messageTitle</string>
+    <string name="TRANS_NAME_MESSAGEDESCRIPTION">messageDesc</string>
+    <string name="TRANS_NAME_MESSAGENAME">messageName</string>
+
+    <string name="PREFERENCES_NAME">my_preferences</string>
+
+    <string name="STORAGE_URL">gs://location-offers.appspot.com</string>
+    <string name="STORAGE_PATH">user_images/</string>
+    <string name="STORAGE_FORMAT">.png</string>
+</resources>

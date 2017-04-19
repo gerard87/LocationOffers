@@ -47,8 +47,11 @@ public class ItemClick implements OnItemClickListener {
             fragment.setEnterTransition(new Fade());
             fragment.setSharedElementReturnTransition(new DetailsTransition());
         }
-        startFragmentWithSharedElement(fragment, image_cv, "messageImage",
-                title_cv, "messageTitle", description_cv, "messageDesc", name_cv, "messageName");
+        startFragmentWithSharedElement(fragment,
+                image_cv, activity.getString(R.string.TRANS_NAME_MESSAGEIMAGE),
+                title_cv, activity.getString(R.string.TRANS_NAME_MESSAGETITLE),
+                description_cv, activity.getString(R.string.TRANS_NAME_MESSAGEDESCRIPTION),
+                name_cv, activity.getString(R.string.TRANS_NAME_MESSAGENAME));
     }
 
     private void startFragmentWithSharedElement(Fragment fragment,

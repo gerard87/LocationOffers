@@ -93,13 +93,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Button btn_reg = (Button) findViewById(R.id.button_register);
         SignInButton btn_glogin = (SignInButton) findViewById(R.id.button_google_login);
 
-        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
 
         if (sharedPreferences.contains("id")
                 && sharedPreferences.contains("user")
                 && sharedPreferences.contains("mode")) {
             Toast.makeText(getApplicationContext(),
-                    "Welcome " + sharedPreferences.getString("user", null),
+                    getString(R.string.welcome) + sharedPreferences.getString("user", null),
                     Toast.LENGTH_SHORT).show();
 
             start();
@@ -116,13 +116,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (!task.isSuccessful()) {
-                                        Toast.makeText(getApplicationContext(), "Login failed",
+                                        Toast.makeText(getApplicationContext(), getString(R.string.login_failed),
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
                 } else {
-                    Toast.makeText(getApplicationContext(), "Mail and pass cannot be empty",
+                    Toast.makeText(getApplicationContext(), getString(R.string.login_input_error),
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -166,7 +166,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     if (user.getDisplayName() != null)
                         Toast.makeText(getApplicationContext(),
-                                "Signed in as "+user.getDisplayName(),
+                                getString(R.string.signed_in_message)+user.getDisplayName(),
                                 Toast.LENGTH_SHORT)
                                 .show();
 
@@ -214,7 +214,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         charSequence[0] = "User";
         charSequence[1] = "Commerce";
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select user mode")
+        builder.setTitle(getString(R.string.login_user_mode))
                 .setItems(charSequence, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -240,9 +240,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void uploadImage () {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
-                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         imageReference =
-                storageReference.child("user_images/"+user.getUid()+".png");
+                storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
 
         String url = user.getPhotoUrl().toString();
         if (url != null) {
@@ -356,7 +356,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                         if (!task.isSuccessful()) {
                             Toast.makeText(getApplicationContext(),
-                                    "Authentication failed", Toast.LENGTH_SHORT).show();
+                                    getString(R.string.login_error_message), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

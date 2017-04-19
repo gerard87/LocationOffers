@@ -200,10 +200,10 @@ public class RegisterActivity extends AppCompatActivity
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (!task.isSuccessful()) {
-                                Toast.makeText(getApplicationContext(), "Register failed",
+                                Toast.makeText(getApplicationContext(), getString(R.string.register_failed),
                                         Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(getApplicationContext(), "Register successful",
+                                Toast.makeText(getApplicationContext(), getString(R.string.register_successful),
                                         Toast.LENGTH_SHORT).show();
 
                             }
@@ -218,9 +218,9 @@ public class RegisterActivity extends AppCompatActivity
     private void uploadImage (FirebaseUser user, byte[] image) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
-                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
-                storageReference.child("user_images/"+user.getUid()+".png");
+                storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
 
         imageReference.putBytes(image);
 

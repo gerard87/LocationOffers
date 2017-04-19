@@ -186,13 +186,9 @@ public class PlacesInterestsFragment extends Fragment {
                     public void onClick(View v) {
                         CheckBox cb = (CheckBox) v ;
                         PlaceInterest interest = (PlaceInterest) cb.getTag();
-                        Toast.makeText(myContext,
-                                "Clicked on Checkbox: " + cb.getText() +
-                                        " is " + cb.isChecked(),
-                                Toast.LENGTH_LONG).show();
                         interest.setSelected(cb.isChecked());
 
-                        SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
+                        SharedPreferences pref = myContext.getSharedPreferences(getString(R.string.PREFERENCES_NAME), MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putBoolean(((PlaceInterest)cb.getTag()).getName(),cb.isChecked());
                         editor.commit();
@@ -216,7 +212,7 @@ public class PlacesInterestsFragment extends Fragment {
 
 
     private void displayListView(){
-        SharedPreferences pref = myContext.getSharedPreferences("MyPref", MODE_PRIVATE);
+        SharedPreferences pref = myContext.getSharedPreferences(getString(R.string.PREFERENCES_NAME), MODE_PRIVATE);
         ArrayList<PlaceInterest> interestList = new ArrayList<>();
 
         PlaceInterest pi;

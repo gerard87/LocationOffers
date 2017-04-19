@@ -15,7 +15,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -25,7 +24,6 @@ import android.widget.Toast;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.fragments.ListFragment;
-import com.android.udl.locationoffers.fragments.LocationFragment;
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
@@ -50,9 +48,8 @@ public class MainActivity extends AppCompatActivity
 
     FirebaseDatabase db;
 
-    private static final String TAG_USER = "tag_user";
+
     private static final String TAG_COMMERCE = "tag_commerce";
-    private static final String TAG_LOCATION = "tag_location";
 
     private static final int MENU_START_SERVICE = 10;
     private static final int MENU_STOP_SERVICE = 20;
@@ -76,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
         db = FirebaseDatabase.getInstance();
 
-        sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -131,9 +128,9 @@ public class MainActivity extends AppCompatActivity
         FirebaseStorage storage = FirebaseStorage.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference storageReference =
-                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
-                storageReference.child("user_images/"+user.getUid()+".png");
+                storageReference.child(getString(R.string.STORAGE_URL)+user.getUid()+getString(R.string.STORAGE_FORMAT));
         imageReference.getBytes(1024*1024).addOnSuccessListener(
                 new OnSuccessListener<byte[]>() {
             @Override
@@ -226,7 +223,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_commerce_trash) {
             ListFragment listFragment = ListFragment.newInstance("removed");
             startFragment(listFragment, TAG_COMMERCE);
-            title = "Trash";
+            title = getString(R.string.trash);
 
         } else if (id == R.id.nav_commerce_scanQR) {
             Intent intent = new Intent("com.google.zxing.client.android.SCAN");
@@ -239,10 +236,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_user_trash) {
             ListFragment listFragment = ListFragment.newInstance("removed");
             startFragment(listFragment, TAG_COMMERCE);
-            title = "Trash";
-        } else if (id == R.id.nav_user_location) {
-            startFragment(new LocationFragment(), TAG_LOCATION);
-            title = "Location";
+            title = getString(R.string.trash);
         }else if (id == R.id.nav_settings) {
             startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
         } else if (id == R.id.nav_help) {
@@ -259,7 +253,7 @@ public class MainActivity extends AppCompatActivity
             finish();
         } else if (id == R.id.nav_user_selectInterests){
             startFragmentBackStack(new PlacesInterestsFragment());
-            title = "Select Interests";
+            title = getString(R.string.select_interests);
         }
 
         if (getSupportActionBar() != null) {
@@ -293,23 +287,8 @@ public class MainActivity extends AppCompatActivity
 
                     setMessageAsUsed(user, messageId);
                 }catch (ArrayIndexOutOfBoundsException e){
-                    Toast.makeText(getApplicationContext(),
-                            getResources().getIdentifier("MESSAGE_INVALID",
-                                    "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),getString(R.string.MESSAGE_INVALID),Toast.LENGTH_SHORT).show();
                 }
-
-
-
-                // Handle successful scan
-                /*UserSQLiteManage userManager = new UserSQLiteManage(getApplicationContext());
-
-                int messageID = Integer.parseInt(contents.replace("USER",""));
-                if(userManager.checkIfMessageIsUsedByID(messageID)){
-                    Toast.makeText(getApplicationContext(),"codi no valid",Toast.LENGTH_SHORT).show();
-                }else{
-                    userManager.setMessageAsUsed(messageID);
-                    Toast.makeText(getApplicationContext(),"codi correcte",Toast.LENGTH_SHORT).show();
-                }*/
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
             }
@@ -325,15 +304,11 @@ public class MainActivity extends AppCompatActivity
                 if (dataSnapshot.exists()) {
                     Message message = dataSnapshot.getValue(Message.class);
                     if(message.isUsed()){
-                        Toast.makeText(getApplicationContext(),
-                                getResources().getIdentifier("MESSAGE_ALREADY_USED",
-                                        "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(),getString(R.string.MESSAGE_ALREADY_USED),Toast.LENGTH_SHORT).show();
                     }else{
                         message.setUsed(true);
                         dataSnapshot.getRef().setValue(message);
-                        Toast.makeText(getApplicationContext(),
-                                getResources().getIdentifier("MESSAGE_NOT_USED",
-                                        "string","com.android.udl.locationoffers"),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(),getString(R.string.MESSAGE_NOT_USED),Toast.LENGTH_SHORT).show();
                     }
 
 
@@ -396,8 +371,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (mode.equals(getString(R.string.user))) {
-            menu.add(Menu.NONE,MENU_START_SERVICE,Menu.NONE, "Start Message Detection");
-            menu.add(Menu.NONE,MENU_STOP_SERVICE,Menu.NONE, "Stop Message Detection");
+            menu.add(Menu.NONE,MENU_START_SERVICE,Menu.NONE, getString(R.string.start_message_detection));
+            menu.add(Menu.NONE,MENU_STOP_SERVICE,Menu.NONE, getString(R.string.stop_message_detection));
         }
         return super.onCreateOptionsMenu(menu);
     }

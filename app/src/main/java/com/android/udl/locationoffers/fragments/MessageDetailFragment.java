@@ -121,7 +121,7 @@ public class MessageDetailFragment extends Fragment {
         }
 
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
         mode = sharedPreferences.getString("mode", null);
 
 
@@ -158,9 +158,9 @@ public class MessageDetailFragment extends Fragment {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference storageReference =
-                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
-                storageReference.child("user_images/"+commerceID+".png");
+                storageReference.child(getString(R.string.STORAGE_PATH)+commerceID+getString(R.string.STORAGE_FORMAT));
         imageReference.getBytes(1024*1024).addOnSuccessListener(
                 new OnSuccessListener<byte[]>() {
                     @Override

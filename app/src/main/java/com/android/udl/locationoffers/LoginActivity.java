@@ -168,7 +168,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     if (user.getDisplayName() != null)
                         Toast.makeText(getApplicationContext(),
-                                getString(R.string.signed_in_message)+user.getDisplayName(),
+                                getString(R.string.signed_in_message)+" "+user.getDisplayName(),
                                 Toast.LENGTH_SHORT)
                                 .show();
 

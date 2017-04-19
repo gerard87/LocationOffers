@@ -2,6 +2,7 @@ package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -156,7 +157,6 @@ public class MessageDetailFragment extends Fragment {
 
     private void setCommerceImageByID (String commerceID, final ImageView iv) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference storageReference =
                 storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
@@ -196,6 +196,11 @@ public class MessageDetailFragment extends Fragment {
     private int getSizeWidth(){
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+
+        //return width or height in base of screen orientation
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            return ((Double)(displaymetrics.heightPixels * 0.8)).intValue();
+        }
         return displaymetrics.widthPixels;
     }
 

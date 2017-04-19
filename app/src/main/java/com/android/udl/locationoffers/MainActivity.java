@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
 
     FirebaseDatabase db;
 
-    private static final String TAG_COMMERCE = "tag_commerce";
+    private static final String TAG_LIST = "tag_list";
 
     private static final int MENU_START_SERVICE = 10;
     private static final int MENU_STOP_SERVICE = 20;
@@ -99,12 +99,12 @@ public class MainActivity extends AppCompatActivity
                 navigationView.inflateMenu(R.menu.drawer_user);
                 navigationView.inflateMenu(R.menu.drawer);
                 ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_COMMERCE);
+                startFragment(listFragment, TAG_LIST);
             } else {
                 navigationView.inflateMenu(R.menu.drawer_commerce);
                 navigationView.inflateMenu(R.menu.drawer);
                 ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_COMMERCE);
+                startFragment(listFragment, TAG_LIST);
 
                 downloadImage();
             }
@@ -156,7 +156,8 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            ListFragment listFragment = (ListFragment) getSupportFragmentManager().findFragmentByTag(TAG_COMMERCE);
+            ListFragment listFragment =
+                    (ListFragment) getSupportFragmentManager().findFragmentByTag(TAG_LIST);
             if(listFragment != null && listFragment.isFabOpened()){
                 listFragment.closeFab();
             } else {
@@ -215,14 +216,14 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_commerce_list) {
             ListFragment listFragment = ListFragment.newInstance("messages");
-            startFragment(listFragment, TAG_COMMERCE);
+            startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
             ListFragment listFragment = ListFragment.newInstance("removed");
-            startFragment(listFragment, TAG_COMMERCE);
+            startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
 
         } else if (id == R.id.nav_commerce_scanQR) {
@@ -231,11 +232,11 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
             ListFragment listFragment = ListFragment.newInstance("messages");
-            startFragment(listFragment, TAG_COMMERCE);
+            startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_trash) {
             ListFragment listFragment = ListFragment.newInstance("removed");
-            startFragment(listFragment, TAG_COMMERCE);
+            startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
         }else if (id == R.id.nav_settings) {
             startActivity(new Intent(getApplicationContext(), SettingsActivity.class));

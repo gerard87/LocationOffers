@@ -91,7 +91,7 @@ public class ListFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(llm);
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
         mode = sharedPreferences.getString("mode", null);
 
         db_mode = getArguments().getString("db");
@@ -178,9 +178,9 @@ public class ListFragment extends Fragment {
     private void downloadImage (final Message message) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
-                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
-                storageReference.child("user_images/"+message.getCommerce_uid()+".png");
+                storageReference.child(getString(R.string.STORAGE_PATH)+message.getCommerce_uid()+getString(R.string.STORAGE_FORMAT));
         imageReference.getBytes(1024*1024).addOnSuccessListener(
                 new OnSuccessListener<byte[]>() {
                     @Override

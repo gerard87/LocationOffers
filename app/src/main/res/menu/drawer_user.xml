@@ -14,11 +14,6 @@
             android:title="@string/trash" />
 
         <item
-            android:id="@+id/nav_user_location"
-            android:icon="@drawable/ic_domain_black_24dp"
-            android:title="Location" />
-
-        <item
             android:id="@+id/nav_user_selectInterests"
             android:icon="@drawable/ic_domain_black_24dp"
             android:title="Select Interests" />

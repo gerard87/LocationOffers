@@ -76,21 +76,17 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     private static int FASTEST_INTERVAL = 20000; // 5 sec
     private static int DISPLACEMENT = 10; // 10 meters
 
-
-    private static final int REQUEST_LOCATION = 2;
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-
     private LocationRequest mLocationRequest;
 
     @Override
     public void onCreate(){
-        showToast("Service Started");
+        showToast(getString(R.string.service_started));
         instance = this;
 
         db = FirebaseDatabase.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(getString(R.string.PREFERENCES_NAME), MODE_PRIVATE);
         interestList = new ArrayList<>();
 
         for(PlacesInterestEnum interest : PlacesInterestEnum.values()){
@@ -192,7 +188,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             mGoogleApiClient.disconnect();
         }
         instance = null;
-        showToast("Service Stopped");
+        showToast(getString(R.string.service_stopped));
     }
 
 
@@ -392,7 +388,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setLargeIcon(message.getImage())
                 .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
-                .setContentTitle("LocationOffers")
+                .setContentTitle(getString(R.string.app_name))
                 .setContentText(message.getTitle())
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

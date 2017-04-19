@@ -165,7 +165,11 @@ public class Message implements Parcelable{
         dest.writeString(commerce_name);
         dest.writeString(commerce_uid);
         dest.writeString(message_uid);
-        dest.writeByte((byte)(used.booleanValue()?1:0));
+        try{
+            dest.writeByte((byte)(used.booleanValue()?1:0));
+        }catch(NullPointerException e){
+        }
+
     }
 
     @Override

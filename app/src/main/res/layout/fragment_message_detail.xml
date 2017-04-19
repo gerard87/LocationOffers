@@ -87,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/MESSAGE_ALREADY_USED"
-            android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:textAppearance="@android:style/TextAppearance.Large"
             android:textColor="@color/zxing_viewfinder_laser"
             android:textStyle="bold"
             android:visibility="invisible"

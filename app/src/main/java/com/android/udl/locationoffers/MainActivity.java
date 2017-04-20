@@ -94,30 +94,29 @@ public class MainActivity extends AppCompatActivity
                 .findViewById(R.id.imageView);
 
         mode = sharedPreferences.getString("mode", null);
+        if (mode.equals(getString(R.string.user))) {
+            navigationView.inflateMenu(R.menu.drawer_user);
+            navigationView.inflateMenu(R.menu.drawer);
+        } else {
+            navigationView.inflateMenu(R.menu.drawer_commerce);
+            navigationView.inflateMenu(R.menu.drawer);
+            downloadImage();
+        }
+        setTitle(getString(R.string.messages));
+
+        TextView tv = (TextView) navigationView.getHeaderView(0)
+                .findViewById(R.id.textView);
+        tv.setText(sharedPreferences.getString("user", null));
+
         if (savedInstanceState == null) {
-            if (mode.equals(getString(R.string.user))) {
-                navigationView.inflateMenu(R.menu.drawer_user);
-                navigationView.inflateMenu(R.menu.drawer);
-                ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_LIST);
-            } else {
-                navigationView.inflateMenu(R.menu.drawer_commerce);
-                navigationView.inflateMenu(R.menu.drawer);
-                ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_LIST);
 
-                downloadImage();
-            }
-
-            setTitle(getString(R.string.messages));
-
-            TextView tv = (TextView) navigationView.getHeaderView(0)
-                    .findViewById(R.id.textView);
-            tv.setText(sharedPreferences.getString("user", null));
+            ListFragment listFragment = ListFragment.newInstance("messages");
+            startFragment(listFragment, TAG_LIST);
 
             Message message = getIntent().getParcelableExtra("Message");
             if(message != null){
-                MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+                MessageDetailFragment messageDetailFragment =
+                        MessageDetailFragment.newInstance(message);
                 startFragmentBackStack(messageDetailFragment);
             }
         }

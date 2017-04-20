@@ -105,9 +105,10 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         }
     }
 
-    public void add(Message message){
+    public int add(Message message){
         mDataset.add(message);
         notifyItemInserted(mDataset.size()-1);
+        return mDataset.size()-1;
     }
 }
 

@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
 
-            ListFragment listFragment = ListFragment.newInstance("messages");
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
             startFragment(listFragment, TAG_LIST);
 
             Message message = getIntent().getParcelableExtra("Message");
@@ -214,14 +214,14 @@ public class MainActivity extends AppCompatActivity
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_commerce_list) {
-            ListFragment listFragment = ListFragment.newInstance("messages");
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
-            ListFragment listFragment = ListFragment.newInstance("removed");
+            ListFragment listFragment = ListFragment.newInstance("removed", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
 
@@ -230,11 +230,11 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
-            ListFragment listFragment = ListFragment.newInstance("messages");
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_trash) {
-            ListFragment listFragment = ListFragment.newInstance("removed");
+            ListFragment listFragment = ListFragment.newInstance("removed", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
         }else if (id == R.id.nav_settings) {

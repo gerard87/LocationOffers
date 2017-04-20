@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,15 +105,19 @@ public class NewMessageFormFragment extends Fragment {
                     saveToFirebase(ref, user);
                 }
 
-                ref.addValueEventListener(new ValueEventListener() {
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         hideKeyboard();
 
                         Toast.makeText(getContext(), getString(R.string.message_db_ok),
                                 Toast.LENGTH_SHORT).show();
+
+                        getFragmentManager().popBackStack(
+                                null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
                         ListFragment listFragment =
-                                ListFragment.newInstance("messages");
+                                ListFragment.newInstance("messages", message);
                         startFragment(listFragment);
                         mListener.onMessageAdded(getString(R.string.messages));
                     }
@@ -128,7 +134,6 @@ public class NewMessageFormFragment extends Fragment {
         }
     }
 
-
     private void saveToFirebase (DatabaseReference ref, FirebaseUser user) {
         DatabaseReference msgref = ref.push();
         Message message = new Message(ed_title.getText().toString(),
@@ -140,6 +145,8 @@ public class NewMessageFormFragment extends Fragment {
     private void updateFirebase (DatabaseReference ref) {
         ref.child("title").setValue(ed_title.getText().toString());
         ref.child("description").setValue(ed_desc.getText().toString());
+        message.setTitle(ed_title.getText().toString());
+        message.setDescription(ed_desc.getText().toString());
     }
 
     private void hideKeyboard () {

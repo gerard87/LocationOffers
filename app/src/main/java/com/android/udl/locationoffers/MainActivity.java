@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.design.widget.NavigationView;
@@ -128,15 +129,20 @@ public class MainActivity extends AppCompatActivity
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference storageReference =
                 storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
-        StorageReference imageReference =
-                storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
-        imageReference.getBytes(1024*1024).addOnSuccessListener(
-                new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
-            }
-        });
+        if (user != null) {
+            StorageReference imageReference =
+                    storageReference.child(getString(
+                            R.string.STORAGE_PATH) + user.getUid() +
+                            getString(R.string.STORAGE_FORMAT));
+            imageReference.getBytes(1024*1024).addOnSuccessListener(
+                    new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
+                        }
+                    });
+        }
+
     }
 
     @Override
@@ -145,7 +151,7 @@ public class MainActivity extends AppCompatActivity
         setIntent(intent);
 
         Message message = intent.getExtras().getParcelable("Message");
-        MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+        MessageDetailFragment messageDetailFragment = MessageDetailFragment.newInstance(message);
         startFragmentBackStack(messageDetailFragment);
     }
 
@@ -209,7 +215,7 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         String title = getString(R.string.app_name);
 
@@ -279,7 +285,6 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
                 String contents = intent.getStringExtra("SCAN_RESULT");
-                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
                 try{
                     String user = contents.split("::")[0];

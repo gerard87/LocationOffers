@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity
         StorageReference storageReference =
                 storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
         StorageReference imageReference =
-                storageReference.child(getString(R.string.STORAGE_URL)+user.getUid()+getString(R.string.STORAGE_FORMAT));
+                storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
         imageReference.getBytes(1024*1024).addOnSuccessListener(
                 new OnSuccessListener<byte[]>() {
             @Override

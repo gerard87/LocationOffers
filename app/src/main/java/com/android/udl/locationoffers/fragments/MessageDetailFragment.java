@@ -104,7 +104,7 @@ public class MessageDetailFragment extends Fragment {
         textView_name.setText(message.getCommerce_name());
 
         if(message.isUsed() != null){
-            if(message.isUsed().booleanValue() == true){
+            if(message.isUsed()){
                 textView_used.setVisibility(View.VISIBLE);
             }else{
                 try {

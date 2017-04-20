@@ -49,6 +49,8 @@
     <string name="double_back">Click BACK again to exit</string>
     <string name="delete">Delete</string>
 
+    <string name="network_error">No internet. Check your network connection.</string>
+
     <string name="TYPE_ACCOUNTING">Accounting</string>
     <string name="TYPE_AIRPORT">Airport</string>
     <string name="TYPE_AMUSEMENT_PARK">Amusement Park</string>

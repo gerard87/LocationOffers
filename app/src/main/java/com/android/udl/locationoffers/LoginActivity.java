@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -51,6 +50,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static android.graphics.BitmapFactory.decodeStream;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -76,8 +77,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private StorageReference imageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-
-    private String placesID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -265,10 +264,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         imageReference =
                 storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
 
-        String url = user.getPhotoUrl().toString();
-        if (url != null) {
-            Log.d("Firebase Storage:", url);
-            new DownloadImageTask().execute(url);
+        if (user.getPhotoUrl() != null) {
+            String url = user.getPhotoUrl().toString();
+            if (url != null) {
+                Log.d("Firebase Storage:", url);
+                new DownloadImageTask().execute(url);
+            }
         }
 
     }
@@ -309,9 +310,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Log.d("","The response is: "+response);
 
             is = connection.getInputStream();
-            Bitmap image = BitmapFactory.decodeStream(is);
 
-            return image;
+            return decodeStream(is);
 
         } finally {
             if (is != null) is.close();
@@ -350,7 +350,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         } else if (requestCode == PLACE_PICKER_REQUEST) {
             if(resultCode == RESULT_OK && data != null){
-                placesID = PlacePicker.getPlace(data, this).getId();
+                String placesID = PlacePicker.getPlace(data, this).getId();
                 reference.child("place").setValue(placesID);
                 saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
             }

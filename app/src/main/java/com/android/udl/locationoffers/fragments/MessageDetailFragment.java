@@ -92,64 +92,65 @@ public class MessageDetailFragment extends Fragment {
         Bundle args = getArguments();
 
         message = args.getParcelable("Message");
+        if (message != null) {
 
-        if(message.getImage() != null){
-            imageView.setImageBitmap(message.getImage());
-        }else{
-            setCommerceImageByID(message.getCommerce_uid(),imageView);
-        }
-
-        textView_title.setText(message.getTitle());
-        textView_description.setText(message.getDescription());
-        textView_name.setText(message.getCommerce_name());
-
-        if(message.isUsed() != null){
-            if(message.isUsed().booleanValue() == true){
-                textView_used.setVisibility(View.VISIBLE);
+            if(message.getImage() != null){
+                imageView.setImageBitmap(message.getImage());
             }else{
-                try {
-                    String toEncode = user.getUid()+"::"+message.getMessage_uid();
-                    Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
-                    if(bm != null) {
-                        imageViewQR.setImageBitmap(bm);
-                    }
-
-                } catch (WriterException e) {
-
-                }
+                setCommerceImageByID(message.getCommerce_uid(),imageView);
             }
 
-        }
+            textView_title.setText(message.getTitle());
+            textView_description.setText(message.getDescription());
+            textView_name.setText(message.getCommerce_name());
 
+            if(message.isUsed() != null){
+                if(message.isUsed()){
+                    textView_used.setVisibility(View.VISIBLE);
+                }else{
+                    try {
+                        String toEncode = user.getUid()+"::"+message.getMessage_uid();
+                        Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
+                        if(bm != null) {
+                            imageViewQR.setImageBitmap(bm);
+                        }
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
-        mode = sharedPreferences.getString("mode", null);
-
-
-        removed = message.isRemoved();
-
-        if (mode.equals(getString(R.string.user)) && !removed) {
-            fab.setVisibility(View.INVISIBLE);
-        }
-
-        if (removed) {
-            fab.setImageResource(R.drawable.ic_restore_white_24dp);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mListener.onRemovedMessage(true);
-                    moveFromXToY(false);
+                    } catch (WriterException ignored) {}
                 }
-            });
-        } else {
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
-                    startFragment(fragment);
-                    mListener.onEditMessageDetail(getString(R.string.edit_message));
-                }
-            });
+
+            }
+
+
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+            mode = sharedPreferences.getString("mode", null);
+
+
+            removed = message.isRemoved();
+
+            if (mode.equals(getString(R.string.user)) && !removed) {
+                fab.setVisibility(View.INVISIBLE);
+            }
+
+            if (removed) {
+                fab.setImageResource(R.drawable.ic_restore_white_24dp);
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mListener.onRemovedMessage(true);
+                        moveFromXToY(false);
+                    }
+                });
+            } else {
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
+                        startFragment(fragment);
+                        mListener.onEditMessageDetail(getString(R.string.edit_message));
+                    }
+                });
+            }
+
         }
 
     }

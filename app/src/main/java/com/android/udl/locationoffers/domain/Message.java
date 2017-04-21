@@ -183,4 +183,20 @@ public class Message implements Parcelable{
                 ", removed=" + removed +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message = (Message) o;
+
+        if (title != null ? !title.equals(message.title) : message.title != null) return false;
+        if (description != null ? !description.equals(message.description) : message.description != null)
+            return false;
+        if (commerce_uid != null ? !commerce_uid.equals(message.commerce_uid) : message.commerce_uid != null)
+            return false;
+        return message_uid != null ? message_uid.equals(message.message_uid) : message.message_uid == null;
+
+    }
 }

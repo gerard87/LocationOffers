@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="spinner_items">
+        <item>User</item>
+        <item>Commerce</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Only when on wifi</item>
+        <item>On any network</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+</resources>

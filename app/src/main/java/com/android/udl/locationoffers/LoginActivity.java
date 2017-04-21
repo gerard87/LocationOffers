@@ -5,7 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -49,6 +50,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static android.graphics.BitmapFactory.decodeStream;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -75,113 +78,128 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
 
-    private String placesID;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        if (checkPlayServices()) {
-            configureGoogleSignIn();
-            configureGoogleApiClient();
-        }
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
 
-        et_user = (EditText) findViewById(R.id.editText_login_user);
-        et_pass = (EditText) findViewById(R.id.editText_login_pass);
-        firebaseAuth = FirebaseAuth.getInstance();
+            if (checkPlayServices()) {
+                configureGoogleSignIn();
+                configureGoogleApiClient();
+            }
 
-        Button btn = (Button) findViewById(R.id.button_login);
-        Button btn_reg = (Button) findViewById(R.id.button_register);
-        SignInButton btn_glogin = (SignInButton) findViewById(R.id.button_google_login);
+            et_user = (EditText) findViewById(R.id.editText_login_user);
+            et_pass = (EditText) findViewById(R.id.editText_login_pass);
+            firebaseAuth = FirebaseAuth.getInstance();
 
-        sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+            Button btn = (Button) findViewById(R.id.button_login);
+            Button btn_reg = (Button) findViewById(R.id.button_register);
+            SignInButton btn_glogin = (SignInButton) findViewById(R.id.button_google_login);
 
-        if (sharedPreferences.contains("id")
-                && sharedPreferences.contains("user")
-                && sharedPreferences.contains("mode")) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.welcome) + sharedPreferences.getString("user", null),
-                    Toast.LENGTH_SHORT).show();
+            sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
 
-            start();
+            if (sharedPreferences.contains("id")
+                    && sharedPreferences.contains("user")
+                    && sharedPreferences.contains("mode")) {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.welcome) + sharedPreferences.getString("user", null),
+                        Toast.LENGTH_SHORT).show();
 
-        }
+                start();
 
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!fieldsBlank()) {
-                    firebaseAuth.signInWithEmailAndPassword(et_user.getText().toString(),
-                            et_pass.getText().toString())
-                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (!task.isSuccessful()) {
-                                        Toast.makeText(getApplicationContext(), getString(R.string.login_failed),
-                                                Toast.LENGTH_SHORT).show();
+            }
+
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!fieldsBlank()) {
+                        firebaseAuth.signInWithEmailAndPassword(et_user.getText().toString(),
+                                et_pass.getText().toString())
+                                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (!task.isSuccessful()) {
+                                            Toast.makeText(getApplicationContext(), getString(R.string.login_failed),
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
                                     }
+                                });
+                    } else {
+                        Toast.makeText(getApplicationContext(), getString(R.string.login_input_error),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+            btn_reg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                    startActivity(intent);
+                }
+            });
+
+            mAuth = FirebaseAuth.getInstance();
+
+            mAuthListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        Log.d("Google sign in", "onAuthStateChanged: Signed in");
+
+                        reference = db.getReference("Users").child(user.getUid());
+
+                        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    mode = dataSnapshot.child("mode").getValue(String.class);
+                                    saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
+                                } else {
+                                    selectMode(dataSnapshot);
                                 }
-                            });
-                } else {
-                    Toast.makeText(getApplicationContext(), getString(R.string.login_input_error),
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btn_reg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        mAuth = FirebaseAuth.getInstance();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    Log.d("Google sign in", "onAuthStateChanged: Signed in");
-
-                    reference = db.getReference("Users").child(user.getUid());
-
-                    reference.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                mode = dataSnapshot.child("mode").getValue(String.class);
-                                saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
-                            } else {
-                                selectMode(dataSnapshot);
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        });
 
-                    if (user.getDisplayName() != null)
-                        Toast.makeText(getApplicationContext(),
-                                getString(R.string.signed_in_message)+" "+user.getDisplayName(),
-                                Toast.LENGTH_SHORT)
-                                .show();
+                        if (user.getDisplayName() != null)
+                            Toast.makeText(getApplicationContext(),
+                                    getString(R.string.signed_in_message)+" "+user.getDisplayName(),
+                                    Toast.LENGTH_SHORT)
+                                    .show();
 
-                } else {
-                    Log.d("Google sign in", "onAuthStateChanged: Signed out");
+                    } else {
+                        Log.d("Google sign in", "onAuthStateChanged: Signed out");
+                    }
                 }
-            }
-        };
+            };
 
-        btn_glogin.setOnClickListener(this);
+            btn_glogin.setOnClickListener(this);
 
-        db = FirebaseDatabase.getInstance();
+            db = FirebaseDatabase.getInstance();
 
+
+        } else {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(getString(R.string.network_error))
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    })
+                    .setCancelable(false).create().show();
+        }
     }
 
     private boolean fieldsBlank () {
@@ -246,10 +264,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         imageReference =
                 storageReference.child(getString(R.string.STORAGE_PATH)+user.getUid()+getString(R.string.STORAGE_FORMAT));
 
-        String url = user.getPhotoUrl().toString();
-        if (url != null) {
-            Log.d("Firebase Storage:", url);
-            new DownloadImageTask().execute(url);
+        if (user.getPhotoUrl() != null) {
+            String url = user.getPhotoUrl().toString();
+            if (url != null) {
+                Log.d("Firebase Storage:", url);
+                new DownloadImageTask().execute(url);
+            }
         }
 
     }
@@ -290,9 +310,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Log.d("","The response is: "+response);
 
             is = connection.getInputStream();
-            Bitmap image = BitmapFactory.decodeStream(is);
 
-            return image;
+            return decodeStream(is);
 
         } finally {
             if (is != null) is.close();
@@ -331,7 +350,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         } else if (requestCode == PLACE_PICKER_REQUEST) {
             if(resultCode == RESULT_OK && data != null){
-                placesID = PlacePicker.getPlace(data, this).getId();
+                String placesID = PlacePicker.getPlace(data, this).getId();
                 reference.child("place").setValue(placesID);
                 saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
             }
@@ -372,7 +391,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onStart();
         if( mGoogleApiClient != null )
             mGoogleApiClient.connect();
-        mAuth.addAuthStateListener(mAuthListener);
+        if (mAuth != null)
+            mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override

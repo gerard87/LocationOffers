@@ -3,6 +3,7 @@ package com.android.udl.locationoffers.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -52,10 +53,11 @@ public class ListFragment extends Fragment {
     private String db_mode;
     private String mode;
 
-    public static ListFragment newInstance(String string) {
+    public static ListFragment newInstance(String string, Message message) {
         ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
         args.putString("db", string);
+        if (message != null) args.putParcelable("message", message);
         fragment.setArguments(args);
         return fragment;
     }
@@ -101,7 +103,7 @@ public class ListFragment extends Fragment {
         } else {
             messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
         }
-        MyAdapter adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
+        adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
         if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
 
@@ -137,7 +139,6 @@ public class ListFragment extends Fragment {
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_red_dark);
         /* /Swipe down to refresh */
-
 
     }
 
@@ -186,9 +187,26 @@ public class ListFragment extends Fragment {
                     @Override
                     public void onSuccess(byte[] bytes) {
                         message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
-                        adapter.add(message);
+                        int i = adapter.add(message);
+                        selectMessageIfEdited(message, i);
                     }
                 });
+    }
+
+    private void selectMessageIfEdited (Message message, final int i) {
+        if (getArguments().containsKey("message")) {
+            Message m = getArguments().getParcelable("message");
+            if (message.equals(m)) {
+                mRecyclerView.getLayoutManager().scrollToPosition(i);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRecyclerView.findViewHolderForAdapterPosition(i)
+                                .itemView.performClick();
+                    }
+                },50);
+            }
+        }
     }
 
     private void startFragment(Fragment fragment) {

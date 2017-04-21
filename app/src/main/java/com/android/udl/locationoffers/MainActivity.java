@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.design.widget.NavigationView;
@@ -54,7 +56,10 @@ public class MainActivity extends AppCompatActivity
     private static final int MENU_STOP_SERVICE = 20;
 
     private NavigationView navigationView;
+
     private SharedPreferences sharedPreferences;
+    private SharedPreferences settingsPreferences;
+
     private boolean doubleBack = false;
 
     private ImageView iv;
@@ -73,6 +78,8 @@ public class MainActivity extends AppCompatActivity
         db = FirebaseDatabase.getInstance();
 
         sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+        settingsPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //settingsPreferences.getString("pref_wifi", "1");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -94,30 +101,29 @@ public class MainActivity extends AppCompatActivity
                 .findViewById(R.id.imageView);
 
         mode = sharedPreferences.getString("mode", null);
+        if (mode.equals(getString(R.string.user))) {
+            navigationView.inflateMenu(R.menu.drawer_user);
+            navigationView.inflateMenu(R.menu.drawer);
+        } else {
+            navigationView.inflateMenu(R.menu.drawer_commerce);
+            navigationView.inflateMenu(R.menu.drawer);
+            downloadImage();
+        }
+        setTitle(getString(R.string.messages));
+
+        TextView tv = (TextView) navigationView.getHeaderView(0)
+                .findViewById(R.id.textView);
+        tv.setText(sharedPreferences.getString("user", null));
+
         if (savedInstanceState == null) {
-            if (mode.equals(getString(R.string.user))) {
-                navigationView.inflateMenu(R.menu.drawer_user);
-                navigationView.inflateMenu(R.menu.drawer);
-                ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_LIST);
-            } else {
-                navigationView.inflateMenu(R.menu.drawer_commerce);
-                navigationView.inflateMenu(R.menu.drawer);
-                ListFragment listFragment = ListFragment.newInstance("messages");
-                startFragment(listFragment, TAG_LIST);
 
-                downloadImage();
-            }
-
-            setTitle(getString(R.string.messages));
-
-            TextView tv = (TextView) navigationView.getHeaderView(0)
-                    .findViewById(R.id.textView);
-            tv.setText(sharedPreferences.getString("user", null));
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
+            startFragment(listFragment, TAG_LIST);
 
             Message message = getIntent().getParcelableExtra("Message");
             if(message != null){
-                MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+                MessageDetailFragment messageDetailFragment =
+                        MessageDetailFragment.newInstance(message);
                 startFragmentBackStack(messageDetailFragment);
             }
         }
@@ -129,15 +135,20 @@ public class MainActivity extends AppCompatActivity
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         StorageReference storageReference =
                 storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
-        StorageReference imageReference =
-                storageReference.child(getString(R.string.STORAGE_URL)+user.getUid()+getString(R.string.STORAGE_FORMAT));
-        imageReference.getBytes(1024*1024).addOnSuccessListener(
-                new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
-            }
-        });
+        if (user != null) {
+            StorageReference imageReference =
+                    storageReference.child(getString(
+                            R.string.STORAGE_PATH) + user.getUid() +
+                            getString(R.string.STORAGE_FORMAT));
+            imageReference.getBytes(1024*1024).addOnSuccessListener(
+                    new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            iv.setImageBitmap(BitmapUtils.byteArrayToBitmap(bytes));
+                        }
+                    });
+        }
+
     }
 
     @Override
@@ -146,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         setIntent(intent);
 
         Message message = intent.getExtras().getParcelable("Message");
-        MessageDetailFragment messageDetailFragment = new MessageDetailFragment().newInstance(message);
+        MessageDetailFragment messageDetailFragment = MessageDetailFragment.newInstance(message);
         startFragmentBackStack(messageDetailFragment);
     }
 
@@ -210,19 +221,19 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         String title = getString(R.string.app_name);
 
         if (id == R.id.nav_commerce_list) {
-            ListFragment listFragment = ListFragment.newInstance("messages");
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_commerce_new) {
             startFragmentBackStack(new NewMessageFormFragment());
             title = getString(R.string.new_message);
         } else if (id == R.id.nav_commerce_trash) {
-            ListFragment listFragment = ListFragment.newInstance("removed");
+            ListFragment listFragment = ListFragment.newInstance("removed", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
 
@@ -231,11 +242,11 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_user_list) {
-            ListFragment listFragment = ListFragment.newInstance("messages");
+            ListFragment listFragment = ListFragment.newInstance("messages", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.messages);
         } else if (id == R.id.nav_user_trash) {
-            ListFragment listFragment = ListFragment.newInstance("removed");
+            ListFragment listFragment = ListFragment.newInstance("removed", null);
             startFragment(listFragment, TAG_LIST);
             title = getString(R.string.trash);
         }else if (id == R.id.nav_settings) {
@@ -280,7 +291,6 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
                 String contents = intent.getStringExtra("SCAN_RESULT");
-                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
                 try{
                     String user = contents.split("::")[0];

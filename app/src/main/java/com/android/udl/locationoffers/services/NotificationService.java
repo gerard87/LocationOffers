@@ -288,7 +288,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     dataSnapshot.getRef().setValue(message);
-                    showNotification(message);
+                    //showNotification(message);
                 }
             }
 

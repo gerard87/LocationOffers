@@ -22,13 +22,16 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     public void sendRegistrationToServer(String token){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference fcmRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+        if (user != null) {
+            DatabaseReference fcmRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+            fcmRef.child("token").setValue(token).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("FirebaseIDService", "Token updated");
+                }
+            });
+        }
 
-        fcmRef.child("token").setValue(token).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d("FirebaseIDService", "Token updated");
-            }
-        });
+
     }
 }

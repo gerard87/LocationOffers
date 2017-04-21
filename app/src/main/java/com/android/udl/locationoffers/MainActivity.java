@@ -1,10 +1,14 @@
 package com.android.udl.locationoffers;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -58,7 +62,14 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
 
     private SharedPreferences sharedPreferences;
-    private SharedPreferences settingsPreferences;
+
+    public static final String WIFI = "Wi-Fi";
+    public static final String ANY = "Any";
+    private static boolean wifiConnected = false;
+    private static boolean mobileConnected = false;
+    public static String sPref = null;
+    private NetworkReceiver receiver = new NetworkReceiver();
+    public static boolean hasConnection = true;
 
     private boolean doubleBack = false;
 
@@ -75,11 +86,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        receiver = new NetworkReceiver();
+        this.registerReceiver(receiver, filter);
+
         db = FirebaseDatabase.getInstance();
 
         sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
-        settingsPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        //settingsPreferences.getString("pref_wifi", "1");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -409,5 +422,73 @@ public class MainActivity extends AppCompatActivity
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateConnectedFlags() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            wifiConnected = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            mobileConnected = networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            if (((wifiConnected || mobileConnected) && ANY.equals(sPref)) ||
+                    (wifiConnected && WIFI.equals(sPref))) {
+                hasConnection = true;
+            }
+        } else {
+            setConnectionsToFalse();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Gets the user's network preference settings
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Retrieves a string value for the preferences. The second parameter
+        // is the default value to use if a preference value is not found.
+        sPref = sharedPrefs.getString("pref_wifi", "Wi-Fi");
+
+        updateConnectedFlags();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setConnectionsToFalse();
+    }
+
+    public void setConnectionsToFalse () {
+        wifiConnected = false;
+        mobileConnected = false;
+        hasConnection = false;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (receiver != null) {
+            this.unregisterReceiver(receiver);
+        }
+    }
+
+    public class NetworkReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+            if (WIFI.equals(sPref) && networkInfo != null
+                    && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                hasConnection = true;
+            } else if (ANY.equals(sPref) && networkInfo != null) {
+                hasConnection = true;
+            } else {
+                hasConnection = false;
+            }
+        }
     }
 }

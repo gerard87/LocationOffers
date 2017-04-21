@@ -2,11 +2,13 @@ package com.android.udl.locationoffers.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
 import com.google.firebase.auth.FirebaseAuth;
@@ -83,7 +86,18 @@ public class NewMessageFormFragment extends Fragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveOrUpdateFirebase();
+                if (MainActivity.hasConnection) {
+                    saveOrUpdateFirebase();
+                } else {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+                    dialog.setMessage(getString(R.string.network_error))
+                            .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .create().show();
+                }
             }
         });
     }

@@ -1,12 +1,14 @@
 package com.android.udl.locationoffers.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.adapters.MyAdapter;
@@ -143,37 +146,46 @@ public class ListFragment extends Fragment {
     }
 
     private void read () {
+        if (MainActivity.hasConnection) {
+            String database = mode.equals(getString(R.string.commerce)) ?
+                    (db_mode.equals("messages") ? getString(R.string.messages) : "Removed") :
+                    (db_mode.equals("messages") ? "User messages" : "User removed");
 
-        String database = mode.equals(getString(R.string.commerce)) ?
-                (db_mode.equals("messages") ? getString(R.string.messages) : "Removed") :
-                (db_mode.equals("messages") ? "User messages" : "User removed");
+            FirebaseDatabase db = FirebaseDatabase.getInstance();
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                 DatabaseReference ref =
+                         db.getReference(database).child(user.getUid());
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        adapter = (MyAdapter) mRecyclerView.getAdapter();
+                        adapter.removeAll();
 
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-             DatabaseReference ref =
-                     db.getReference(database).child(user.getUid());
-            ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    adapter = (MyAdapter) mRecyclerView.getAdapter();
-                    adapter.removeAll();
+                        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                            Log.d("COMMERCE","snapshot: " +
+                                    postSnapshot.getValue(Message.class).getTitle());
+                            Message message = postSnapshot.getValue(Message.class);
 
-                    for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                        Log.d("COMMERCE","snapshot: " +
-                                postSnapshot.getValue(Message.class).getTitle());
-                        Message message = postSnapshot.getValue(Message.class);
-
-                        downloadImage(message);
+                            downloadImage(message);
+                        }
                     }
-                }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+            }
+        } else {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+            dialog.setMessage(getString(R.string.network_error))
+                    .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .create().show();
         }
-
     }
 
     private void downloadImage (final Message message) {

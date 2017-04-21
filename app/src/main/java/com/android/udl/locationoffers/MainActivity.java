@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -55,7 +56,10 @@ public class MainActivity extends AppCompatActivity
     private static final int MENU_STOP_SERVICE = 20;
 
     private NavigationView navigationView;
+
     private SharedPreferences sharedPreferences;
+    private SharedPreferences settingsPreferences;
+
     private boolean doubleBack = false;
 
     private ImageView iv;
@@ -74,6 +78,8 @@ public class MainActivity extends AppCompatActivity
         db = FirebaseDatabase.getInstance();
 
         sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+        settingsPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //settingsPreferences.getString("pref_wifi", "1");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

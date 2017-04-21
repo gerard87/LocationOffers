@@ -156,19 +156,10 @@
     <string name="MESSAGE_NOT_USED">This message is valid ;)</string>
     <string name="MESSAGE_INVALID">INVALID CODE</string>
 
-
     <string name="title_activity_settings">Settings</string>
     <string name="pref_title_display_name">Username</string>
     <string name="pref_title_display_pass">Password</string>
-
-
-
-    <string-array name="spinner_items">
-        <item>User</item>
-        <item>Commerce</item>
-    </string-array>
-
-
-
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_download_mode">Choose download data mode</string>
 
 </resources>

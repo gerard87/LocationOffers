@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_person_black_24dp"
         android:title="@string/user" />
 
+    <header
+        android:fragment="com.android.udl.locationoffers.SettingsActivity$DataSyncPreferenceFragment"
+        android:icon="@drawable/ic_sync_black_24dp"
+        android:title="@string/pref_header_data_sync" />
+
 </preference-headers>

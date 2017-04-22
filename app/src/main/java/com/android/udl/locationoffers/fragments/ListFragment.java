@@ -215,6 +215,7 @@ public class ListFragment extends Fragment {
                     public void run() {
                         mRecyclerView.findViewHolderForAdapterPosition(i)
                                 .itemView.performClick();
+                        getArguments().remove("message");
                     }
                 },50);
             }

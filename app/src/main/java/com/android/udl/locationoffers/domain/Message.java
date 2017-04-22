@@ -38,6 +38,16 @@ public class Message implements Parcelable{
         this.commerce_name = commerce_name;
     }
 
+    public Message(String title, String description, String commerce_name,
+                   String commerce_uid, Boolean used, Boolean removed){
+        this.title = title;
+        this.description = description;
+        this.commerce_name = commerce_name;
+        this.commerce_uid = commerce_uid;
+        this.used = used;
+        this.removed = removed;
+    }
+
     public Message(String title, String description, String commerce_uid,
                    String commerce_name, String message_uid) {
         this.title = title;

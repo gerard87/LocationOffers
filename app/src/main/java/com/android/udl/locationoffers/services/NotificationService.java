@@ -1,15 +1,10 @@
 package com.android.udl.locationoffers.services;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,11 +12,9 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
@@ -374,30 +367,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                         Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    public void showNotification(Message message){
-
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("Message",message);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setLargeIcon(message.getImage())
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(message.getTitle())
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setContentIntent(pending);
-
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        notificationManager.notify(0, notificationBuilder.build());
     }
 
     //call this method to know if service is running and should restart after some changes in types of places

@@ -218,6 +218,10 @@ public class ListFragment extends Fragment {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.d("Firebase Storage", "Storage exception: "+ e);
+                        if (adapter != null) {
+                            int i = adapter.add(message);
+                            selectMessageIfEdited(message, i);
+                        }
                     }
                 });
     }

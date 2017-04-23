@@ -120,6 +120,14 @@ public class MainActivity extends AppCompatActivity
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
+
+            if(sharedPreferences.getBoolean("serviceEnabled", true)){
+                Intent serviceIntent;
+                serviceIntent = new Intent(this, NotificationService.class);
+                serviceIntent.addCategory(NotificationService.TAG);
+                startService(serviceIntent);
+            }
+
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);
@@ -409,15 +417,23 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent serviceIntent;
+        sharedPreferences = getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         switch (item.getItemId()) {
             case MENU_START_SERVICE:
+                editor.putBoolean("serviceEnabled",true);
+                editor.apply();
+
                 serviceIntent = new Intent(this, NotificationService.class);
                 serviceIntent.addCategory(NotificationService.TAG);
                 startService(serviceIntent);
                 break;
 
             case MENU_STOP_SERVICE:
+                editor.putBoolean("serviceEnabled",false);
+                editor.apply();
+
                 serviceIntent = new Intent(this, NotificationService.class);
                 serviceIntent.addCategory(NotificationService.TAG);
                 stopService(serviceIntent);

@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +31,6 @@ import com.google.firebase.database.ValueEventListener;
 
 public class NewMessageFormFragment extends Fragment {
 
-    private Button btn_ok;
     private EditText ed_title, ed_desc;
 
     private boolean update = false;
@@ -71,15 +69,17 @@ public class NewMessageFormFragment extends Fragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        btn_ok = (Button) view.findViewById(R.id.button_form_ok);
+        Button btn_ok = (Button) view.findViewById(R.id.button_form_ok);
         ed_title = (EditText) view.findViewById(R.id.editText_form_title);
         ed_desc = (EditText) view.findViewById(R.id.editText_form_description);
 
         Bundle args = getArguments();
         if (args != null && args.containsKey("message")) {
             message = args.getParcelable("message");
-            ed_title.setText(message.getTitle());
-            ed_desc.setText(message.getDescription());
+            if (message != null) {
+                ed_title.setText(message.getTitle());
+                ed_desc.setText(message.getDescription());
+            }
             update = true;
         }
 

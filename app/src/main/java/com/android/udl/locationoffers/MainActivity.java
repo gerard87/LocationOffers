@@ -120,6 +120,11 @@ public class MainActivity extends AppCompatActivity
         if (mode.equals(getString(R.string.user))) {
             navigationView.inflateMenu(R.menu.drawer_user);
             navigationView.inflateMenu(R.menu.drawer);
+            Intent serviceIntent;
+            serviceIntent = new Intent(this, NotificationService.class);
+            serviceIntent.addCategory(NotificationService.TAG);
+            startService(serviceIntent);
+
         } else {
             navigationView.inflateMenu(R.menu.drawer_commerce);
             navigationView.inflateMenu(R.menu.drawer);

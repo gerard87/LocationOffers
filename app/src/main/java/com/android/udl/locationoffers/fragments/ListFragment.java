@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
@@ -100,8 +99,7 @@ public class ListFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
         mode = sharedPreferences.getString("mode", null);
 
-        if (getArguments() != null && getArguments().containsKey("db"))
-            db_mode = getArguments().getString("db");
+        db_mode = getArguments().getString("db");
 
         if (savedInstanceState == null) {
             if (messages == null) messages = new ArrayList<>();
@@ -110,7 +108,6 @@ public class ListFragment extends Fragment {
         }
         adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
         mRecyclerView.setAdapter(adapter);
-        if (messages.size() > 0 && isInLandscapeAndFirst(0)) selectMessage(messages.get(0), 0);
         if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
 
 
@@ -203,51 +200,33 @@ public class ListFragment extends Fragment {
                     public void onSuccess(byte[] bytes) {
                         message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
                         int i = adapter.add(message);
-                        selectMessage(message, i);
+                        selectMessageIfEdited(message, i);
                     }
                 });
     }
 
-    private void selectMessage (Message message, final int i) {
-        if (ifEdited()) {
+    private void selectMessageIfEdited (Message message, final int i) {
+        if (getArguments().containsKey("message")) {
             Message m = getArguments().getParcelable("message");
             if (message.equals(m)) {
-                clickMessage(i);
+                mRecyclerView.getLayoutManager().scrollToPosition(i);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRecyclerView.findViewHolderForAdapterPosition(i)
+                                .itemView.performClick();
+                        getArguments().remove("message");
+                    }
+                },50);
             }
-        } else if (isInLandscapeAndFirst(i)){
-            clickMessage(i);
         }
     }
 
-    private boolean ifEdited () {
-        return getArguments().containsKey("message");
-    }
-
-    private void clickMessage (final int i) {
-        mRecyclerView.getLayoutManager().scrollToPosition(i);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mRecyclerView.findViewHolderForAdapterPosition(i)
-                        .itemView.performClick();
-                if (getArguments().containsKey("message"))
-                    getArguments().remove("message");
-            }
-        },50);
-    }
-
-    private boolean isInLandscapeAndFirst(int i) {
-        return getActivity().findViewById(R.id.content_main2) != null && i==0;
-    }
-
     private void startFragment(Fragment fragment) {
-        RelativeLayout relativeLayout = (RelativeLayout) getActivity().findViewById(R.id.content_main2);
-        int id = relativeLayout == null ? R.id.content_main : R.id.content_main2;
-
         if (fragment != null){
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(id, fragment)
+                    .replace(R.id.content_main, fragment)
                     .addToBackStack(null)
                     .commit();
         }

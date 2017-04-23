@@ -3,10 +3,10 @@ package com.android.udl.locationoffers.listeners;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.transition.Fade;
 import android.view.View;
-import android.widget.RelativeLayout;
 
 import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.R;
@@ -59,10 +59,6 @@ public class ItemClick implements OnItemClickListener {
                                                 View sharedElement2, String transitionName2,
                                                 View sharedElement3, String transitionName3,
                                                 View sharedElement4, String transitionName4) {
-
-        RelativeLayout relativeLayout = (RelativeLayout) activity.findViewById(R.id.content_main2);
-        int id = relativeLayout == null ? R.id.content_main : R.id.content_main2;
-
         if (fragment != null){
             activity.getSupportFragmentManager()
                     .beginTransaction()
@@ -70,7 +66,7 @@ public class ItemClick implements OnItemClickListener {
                     .addSharedElement(sharedElement2, transitionName2)
                     .addSharedElement(sharedElement3, transitionName3)
                     .addSharedElement(sharedElement4, transitionName4)
-                    .replace(id, fragment)
+                    .replace(R.id.content_main, fragment)
                     .addToBackStack(null)
                     .commit();
         }

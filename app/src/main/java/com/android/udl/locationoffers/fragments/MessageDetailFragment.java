@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -19,9 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
@@ -37,8 +34,13 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
+import static android.R.attr.width;
+import static android.R.id.content;
 import static android.graphics.Color.BLACK;
 import static android.graphics.Color.WHITE;
+import static android.support.v7.appcompat.R.attr.height;
 
 public class MessageDetailFragment extends Fragment {
 
@@ -79,16 +81,6 @@ public class MessageDetailFragment extends Fragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (savedInstanceState != null) {
-            Toast.makeText(getActivity(), "EEEEEEEEEE", Toast.LENGTH_SHORT).show();
-            getFragmentManager().popBackStack(
-                    null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-            ListFragment listFragment =
-                    ListFragment.newInstance("messages", message);
-            startFragment(listFragment);
-        }
-
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.edit_fab);
         ImageView imageView = (ImageView) view.findViewById(R.id.image_cv);
         TextView textView_title = (TextView) view.findViewById(R.id.title_detail);
@@ -98,68 +90,67 @@ public class MessageDetailFragment extends Fragment {
         TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
 
         Bundle args = getArguments();
-        if (args != null && args.containsKey("Message")) {
-            message = args.getParcelable("Message");
-            if (message != null) {
 
-                if(message.getImage() != null){
-                    imageView.setImageBitmap(message.getImage());
+        message = args.getParcelable("Message");
+        if (message != null) {
+
+            if(message.getImage() != null){
+                imageView.setImageBitmap(message.getImage());
+            }else{
+                setCommerceImageByID(message.getCommerce_uid(),imageView);
+            }
+
+            textView_title.setText(message.getTitle());
+            textView_description.setText(message.getDescription());
+            textView_name.setText(message.getCommerce_name());
+
+            if(message.isUsed() != null){
+                if(message.isUsed()){
+                    textView_used.setVisibility(View.VISIBLE);
                 }else{
-                    setCommerceImageByID(message.getCommerce_uid(),imageView);
-                }
-
-                textView_title.setText(message.getTitle());
-                textView_description.setText(message.getDescription());
-                textView_name.setText(message.getCommerce_name());
-
-                if(message.isUsed() != null){
-                    if(message.isUsed()){
-                        textView_used.setVisibility(View.VISIBLE);
-                    }else{
-                        try {
-                            String toEncode = user.getUid()+"::"+message.getMessage_uid();
-                            Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
-                            if(bm != null) {
-                                imageViewQR.setImageBitmap(bm);
-                            }
-
-                        } catch (WriterException ignored) {}
-                    }
-
-                }
-
-
-                SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
-                mode = sharedPreferences.getString("mode", null);
-
-
-                removed = message.isRemoved();
-
-                if (mode.equals(getString(R.string.user)) && !removed) {
-                    fab.setVisibility(View.INVISIBLE);
-                }
-
-                if (removed) {
-                    fab.setImageResource(R.drawable.ic_restore_white_24dp);
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mListener.onRemovedMessage(true);
-                            moveFromXToY(false);
+                    try {
+                        String toEncode = user.getUid()+"::"+message.getMessage_uid();
+                        Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
+                        if(bm != null) {
+                            imageViewQR.setImageBitmap(bm);
                         }
-                    });
-                } else {
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
-                            startFragment(fragment);
-                            mListener.onEditMessageDetail(getString(R.string.edit_message));
-                        }
-                    });
+
+                    } catch (WriterException ignored) {}
                 }
 
             }
+
+
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+            mode = sharedPreferences.getString("mode", null);
+
+
+            removed = message.isRemoved();
+
+            if (mode.equals(getString(R.string.user)) && !removed) {
+                fab.setVisibility(View.INVISIBLE);
+            }
+
+            if (removed) {
+                fab.setImageResource(R.drawable.ic_restore_white_24dp);
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mListener.onRemovedMessage(true);
+                        moveFromXToY(false);
+                    }
+                });
+            } else {
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        NewMessageFormFragment fragment = NewMessageFormFragment.newInstance(message);
+                        startFragment(fragment);
+                        mListener.onEditMessageDetail(getString(R.string.edit_message));
+                    }
+                });
+            }
+
         }
 
     }
@@ -215,12 +206,10 @@ public class MessageDetailFragment extends Fragment {
     }
 
     private void startFragment(Fragment fragment) {
-        RelativeLayout relativeLayout = (RelativeLayout) getActivity().findViewById(R.id.content_main2);
-        int id = relativeLayout == null ? R.id.content_main : R.id.content_main2;
         if (fragment != null){
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(id, fragment)
+                    .replace(R.id.content_main, fragment)
                     .addToBackStack(null)
                     .commit();
         }

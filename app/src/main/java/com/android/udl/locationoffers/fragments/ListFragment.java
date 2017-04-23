@@ -43,8 +43,6 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
 
-    private static final String STATE_LIST = "Adapter data";
-
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
 
@@ -73,6 +71,7 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -108,8 +107,6 @@ public class ListFragment extends Fragment {
 
             if (savedInstanceState == null) {
                 if (messages == null) messages = new ArrayList<>();
-            } else {
-                messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
             }
             adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
             mRecyclerView.setAdapter(adapter);
@@ -282,13 +279,5 @@ public class ListFragment extends Fragment {
     public void closeFab () {
         fab_menu.close(true);
     }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(STATE_LIST, (ArrayList<Message>)messages);
-    }
-
-
 
 }

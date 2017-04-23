@@ -80,7 +80,13 @@ public class MessageDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if (savedInstanceState != null) {
-            getFragmentManager().popBackStack();
+            Toast.makeText(getActivity(), "EEEEEEEEEE", Toast.LENGTH_SHORT).show();
+            getFragmentManager().popBackStack(
+                    null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+            ListFragment listFragment =
+                    ListFragment.newInstance("messages", message);
+            startFragment(listFragment);
         }
 
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.edit_fab);

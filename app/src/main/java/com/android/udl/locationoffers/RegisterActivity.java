@@ -1,5 +1,6 @@
 package com.android.udl.locationoffers;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,6 +8,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -72,7 +74,8 @@ public class RegisterActivity extends AppCompatActivity
     private EditText et_name, et_pass, et_mail;
     private TextView textViewFormImage;
     private Bitmap bitmap;
-    private Button btn_img, btn_ok, btn_placesID;
+    private Button btn_img;
+    private Button btn_placesID;
     private String placesID;
     private byte[] image;
     private Spinner spinner;
@@ -102,7 +105,7 @@ public class RegisterActivity extends AppCompatActivity
         et_mail = (EditText) findViewById(R.id.editText_register_mail);
         et_pass = (EditText) findViewById(R.id.editText_register_password);
         btn_img = (Button) findViewById(R.id.button_form_image);
-        btn_ok = (Button) findViewById(R.id.button_register_ok);
+        Button btn_ok = (Button) findViewById(R.id.button_register_ok);
         btn_placesID = (Button) findViewById(R.id.button_selectPlacesID);
         imageView = (ImageView) findViewById(R.id.image_form);
         textViewFormImage = (TextView) findViewById(R.id.textView_form_image);
@@ -160,13 +163,15 @@ public class RegisterActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if(ContextCompat.checkSelfPermission(getApplicationContext(),
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                        Manifest.permission.READ_EXTERNAL_STORAGE) ==
                         PackageManager.PERMISSION_DENIED) {
-                    requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
-                            PERMISSION_EXTERNAL_STORAGE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                PERMISSION_EXTERNAL_STORAGE);
+                    }
                 } else {
                     Intent pickIntent = new Intent(Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     pickIntent.setType("image/*");
                     startActivityForResult(pickIntent, PICK_IMAGE);
                 }
@@ -260,25 +265,27 @@ public class RegisterActivity extends AppCompatActivity
                     String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
                     Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
+                    if (cursor != null) {
+                        cursor.moveToFirst();
 
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String filePath = cursor.getString(columnIndex);
-                    cursor.close();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String filePath = cursor.getString(columnIndex);
+                        cursor.close();
 
 
-                    bitmap = BitmapFactory.decodeFile(filePath);
-                    if (sizeOfBitmap() > 9999999) reduceSize();
+                        bitmap = BitmapFactory.decodeFile(filePath);
+                        if (sizeOfBitmap() > 9999999) reduceSize();
 
-                    imageView.setImageBitmap(bitmap);
-                    image = BitmapUtils.bitmapToByteArray(bitmap);
+                        imageView.setImageBitmap(bitmap);
+                        image = BitmapUtils.bitmapToByteArray(bitmap);
+                    }
+                }
+                break;
 
-                }break;
             case PLACE_PICKER_REQUEST:
                 if(resultCode == RESULT_OK && intent != null){
-                    placesID = PlacePicker.getPlace(intent, this).getId();
+                    placesID = PlacePicker.getPlace(this, intent).getId();
                 }
-
                 break;
         }
     }

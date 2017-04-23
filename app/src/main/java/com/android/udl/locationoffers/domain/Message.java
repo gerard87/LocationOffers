@@ -12,11 +12,10 @@ import com.android.udl.locationoffers.Utils.BitmapUtils;
 
 public class Message implements Parcelable{
 
-    private int id;
+
     private String title;
     private String description;
     private Bitmap image;
-    private int commerce_id;
     private boolean removed;
     private String commerce_name;
     private String commerce_uid;
@@ -24,18 +23,6 @@ public class Message implements Parcelable{
     private Boolean used;//USER
 
     public Message () {
-
-    }
-
-    public Message(int id, String title, String description, Bitmap image,
-                   int commerce_id, boolean removed, String commerce_name) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.image = image;
-        this.commerce_id = commerce_id;
-        this.removed = removed;
-        this.commerce_name = commerce_name;
     }
 
     public Message(String title, String description, String commerce_name,
@@ -59,11 +46,9 @@ public class Message implements Parcelable{
     }
 
     protected Message(Parcel in) {
-        id = in.readInt();
         title = in.readString();
         description = in.readString();
         image = in.readParcelable(Bitmap.class.getClassLoader());
-        commerce_id = in.readInt();
         removed = in.readByte()!=0;
         commerce_name = in.readString();
         commerce_uid = in.readString();
@@ -105,22 +90,6 @@ public class Message implements Parcelable{
 
     public void setImage(Bitmap image) {
         this.image = image;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getCommerce_id() {
-        return commerce_id;
-    }
-
-    public void setCommerce_id(int commerce_id) {
-        this.commerce_id = commerce_id;
     }
 
     public boolean isRemoved() {
@@ -166,18 +135,16 @@ public class Message implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
         dest.writeString(title);
         dest.writeString(description);
         dest.writeByteArray(BitmapUtils.bitmapToByteArray(image));
-        dest.writeInt(commerce_id);
         dest.writeByte((byte)(removed?1:0));
         dest.writeString(commerce_name);
         dest.writeString(commerce_uid);
         dest.writeString(message_uid);
         try{
-            dest.writeByte((byte)(used.booleanValue()?1:0));
-        }catch(NullPointerException e){
+            dest.writeByte((byte)(used ?1:0));
+        }catch(NullPointerException ignored){
         }
 
     }
@@ -185,12 +152,14 @@ public class Message implements Parcelable{
     @Override
     public String toString() {
         return "Message{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
+                "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", image=" + image +
-                ", commerce_id=" + commerce_id +
                 ", removed=" + removed +
+                ", commerce_name='" + commerce_name + '\'' +
+                ", commerce_uid='" + commerce_uid + '\'' +
+                ", message_uid='" + message_uid + '\'' +
+                ", used=" + used +
                 '}';
     }
 

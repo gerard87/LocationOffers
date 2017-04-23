@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -15,7 +16,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
@@ -26,6 +26,7 @@ import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.ItemClick;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,7 +47,6 @@ public class ListFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
-    private FloatingActionButton fab_button;
 
     private OnFragmentInteractionListener mListener;
 
@@ -92,59 +92,63 @@ public class ListFragment extends Fragment {
 
         fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
 
-        mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
-        mRecyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        mRecyclerView.setLayoutManager(llm);
+        if (getView() != null) {
+            mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
+        }
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
-        mode = sharedPreferences.getString("mode", null);
+        if (mRecyclerView != null) {
+            mRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager llm = new LinearLayoutManager(getContext());
+            mRecyclerView.setLayoutManager(llm);
 
-        if (getArguments() != null && getArguments().containsKey("db"))
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+            mode = sharedPreferences.getString("mode", null);
+
             db_mode = getArguments().getString("db");
 
-        if (savedInstanceState == null) {
-            if (messages == null) messages = new ArrayList<>();
-        } else {
-            messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
+            if (savedInstanceState == null) {
+                if (messages == null) messages = new ArrayList<>();
+            } else {
+                messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
+            }
+            adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
+            mRecyclerView.setAdapter(adapter);
+            if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
+
+
+            /* Show/hide floating button*/
+            fab_menu.setClosedOnTouchOutside(true);
+            mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
+            /* /Show/hide floating button*/
+
+            FloatingActionButton fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+            fab_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fab_menu.close(false);
+                    startFragment(new NewMessageFormFragment());
+                    mListener.onFABNewMessageCommerce(getString(R.string.new_message));
+                }
+            });
+
+            if (mode.equals(getString(R.string.user))) fab_menu.setVisibility(View.INVISIBLE);
+
+            /* Swipe down to refresh */
+            final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
+            sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    read();
+                    sr.setRefreshing(false);
+                }
+            });
+            sr.setColorSchemeResources(android.R.color.holo_blue_dark,
+                    android.R.color.holo_green_dark,
+                    android.R.color.holo_orange_dark,
+                    android.R.color.holo_red_dark);
+            /* /Swipe down to refresh */
+
         }
-        adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
-        mRecyclerView.setAdapter(adapter);
-        if (messages.size() > 0 && isInLandscapeAndFirst(0)) selectMessage(messages.get(0), 0);
-        if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
-
-
-        /* Show/hide floating button*/
-        fab_menu.setClosedOnTouchOutside(true);
-        mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
-        /* /Show/hide floating button*/
-
-        fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-        fab_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fab_menu.close(false);
-                startFragment(new NewMessageFormFragment());
-                mListener.onFABNewMessageCommerce(getString(R.string.new_message));
-            }
-        });
-
-        if (mode.equals(getString(R.string.user))) fab_menu.setVisibility(View.INVISIBLE);
-
-        /* Swipe down to refresh */
-        final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
-        sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                read();
-                sr.setRefreshing(false);
-            }
-        });
-        sr.setColorSchemeResources(android.R.color.holo_blue_dark,
-                android.R.color.holo_green_dark,
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_red_dark);
-        /* /Swipe down to refresh */
 
     }
 
@@ -162,15 +166,16 @@ public class ListFragment extends Fragment {
                 ref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        adapter = (MyAdapter) mRecyclerView.getAdapter();
-                        adapter.removeAll();
-
+                        if (adapter != null) {
+                            adapter = (MyAdapter) mRecyclerView.getAdapter();
+                            adapter.removeAll();
+                        }
                         for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                             Log.d("COMMERCE","snapshot: " +
                                     postSnapshot.getValue(Message.class).getTitle());
                             Message message = postSnapshot.getValue(Message.class);
-
-                            downloadImage(message);
+                            if (message != null)
+                                downloadImage(message);
                         }
                     }
 
@@ -191,63 +196,54 @@ public class ListFragment extends Fragment {
         }
     }
 
-    private void downloadImage (final Message message) {
+    private void downloadImage (@NonNull final Message message) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
-                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+
         StorageReference imageReference =
-                storageReference.child(getString(R.string.STORAGE_PATH)+message.getCommerce_uid()+getString(R.string.STORAGE_FORMAT));
-        imageReference.getBytes(1024*1024).addOnSuccessListener(
-                new OnSuccessListener<byte[]>() {
+                storageReference.child("user_images/"+message.getCommerce_uid()+".png");
+        imageReference.getBytes(1024*1024)
+                .addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
-                        message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
-                        int i = adapter.add(message);
-                        selectMessage(message, i);
+                        if (bytes != null) message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
+                        if (adapter != null) {
+                            int i = adapter.add(message);
+                            selectMessageIfEdited(message, i);
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("Firebase Storage", "Storage exception: "+ e);
                     }
                 });
     }
 
-    private void selectMessage (Message message, final int i) {
-        if (ifEdited()) {
+    private void selectMessageIfEdited (Message message, final int i) {
+        if (getArguments().containsKey("message")) {
             Message m = getArguments().getParcelable("message");
             if (message.equals(m)) {
-                clickMessage(i);
+                mRecyclerView.getLayoutManager().scrollToPosition(i);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRecyclerView.findViewHolderForAdapterPosition(i)
+                                .itemView.performClick();
+                        getArguments().remove("message");
+                    }
+                },50);
             }
-        } else if (isInLandscapeAndFirst(i)){
-            clickMessage(i);
         }
     }
 
-    private boolean ifEdited () {
-        return getArguments().containsKey("message");
-    }
-
-    private void clickMessage (final int i) {
-        mRecyclerView.getLayoutManager().scrollToPosition(i);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mRecyclerView.findViewHolderForAdapterPosition(i)
-                        .itemView.performClick();
-                if (getArguments().containsKey("message"))
-                    getArguments().remove("message");
-            }
-        },50);
-    }
-
-    private boolean isInLandscapeAndFirst(int i) {
-        return getActivity().findViewById(R.id.content_main2) != null && i==0;
-    }
-
     private void startFragment(Fragment fragment) {
-        RelativeLayout relativeLayout = (RelativeLayout) getActivity().findViewById(R.id.content_main2);
-        int id = relativeLayout == null ? R.id.content_main : R.id.content_main2;
-
         if (fragment != null){
             getActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(id, fragment)
+                    .replace(R.id.content_main, fragment)
                     .addToBackStack(null)
                     .commit();
         }

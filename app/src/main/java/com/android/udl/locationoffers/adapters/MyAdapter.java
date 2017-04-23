@@ -25,7 +25,7 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private List<Message> mDataset;
     private OnItemClickListener listener;
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
         TextView name;
         TextView title;
@@ -55,13 +55,10 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.title.setText(mDataset.get(position).getTitle());
         holder.description.setText(mDataset.get(position).getDescription());
         holder.image.setImageBitmap(mDataset.get(position).getImage());
-
-        /*DatabaseQueries dq = new DatabaseQueries("Commerces", csh);
-        String name = dq.getCommerceName(mDataset.get(position).getCommerce_id());*/
         holder.name.setText(mDataset.get(position).getCommerce_name());
 
         ViewCompat.setTransitionName(holder.image, String.valueOf(position)+"_image");
@@ -72,11 +69,9 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onItemClick(v, position);
+                listener.onItemClick(v, holder.getAdapterPosition());
             }
         });
-
-
 
     }
 
@@ -96,12 +91,6 @@ public class MyAdapter  extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             int position = mDataset.indexOf(message);
             iter.remove();
             notifyItemRemoved(position);
-        }
-    }
-
-    public void addAll(List<Message> list){
-        for (Message message: list){
-            add(message);
         }
     }
 

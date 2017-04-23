@@ -350,7 +350,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         } else if (requestCode == PLACE_PICKER_REQUEST) {
             if(resultCode == RESULT_OK && data != null){
-                String placesID = PlacePicker.getPlace(data, this).getId();
+                String placesID = PlacePicker.getPlace(this, data).getId();
                 reference.child("place").setValue(placesID);
                 saveToSharedPreferencesAndStart(user.getDisplayName(), mode);
             }

@@ -57,8 +57,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     // Google client to interact with Google API
     private GoogleApiClient mGoogleApiClient;
 
-    private Location mLastLocation;
-
     FirebaseDatabase db;
     FirebaseUser user;
 
@@ -126,12 +124,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     private boolean checkPlayServices(){
         GoogleApiAvailability googleAPIAvailability = GoogleApiAvailability.getInstance();
         int result = googleAPIAvailability.isGooglePlayServicesAvailable(getApplicationContext());
-        if(result != ConnectionResult.SUCCESS){
-            if(googleAPIAvailability.isUserResolvableError(result)) {
-            }
-            return false;
-        }
-        return true;
+        return result == ConnectionResult.SUCCESS;
     }
 
     @Override
@@ -230,22 +223,6 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
     }
 
 
-    private void displayLocation() {
-
-        if (ActivityCompat.checkSelfPermission(this, "ACCESS_FINE_LOCATION")
-                != PackageManager.PERMISSION_GRANTED) {
-
-        } else {
-
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);
-
-            if(mLastLocation != null){
-            }
-
-        }
-
-    }
 
     private void callPlaceDetectionApi() throws SecurityException {
 
@@ -253,13 +230,9 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                 .getCurrentPlace(mGoogleApiClient, null);
         result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
             @Override
-            public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
-                String allPlaces = "";
-
+            public void onResult(@NonNull PlaceLikelihoodBuffer likelyPlaces) {
                 for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-
                     if(!Collections.disjoint(placeLikelihood.getPlace().getPlaceTypes(),(interestList))){
-                        allPlaces += "\n" + placeLikelihood.getPlace().getName() + " " + placeLikelihood.getLikelihood();
                         Log.i("CALLPLACEDETECTIONAPI", String.format("Place '%s' with " +
                                         "likelihood: %g, TYPE: '%s'",
                                 placeLikelihood.getPlace().getName(),

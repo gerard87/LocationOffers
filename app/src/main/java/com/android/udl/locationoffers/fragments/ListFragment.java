@@ -45,7 +45,6 @@ public class ListFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private FloatingActionMenu fab_menu;
-    private FloatingActionButton fab_button;
 
     private OnFragmentInteractionListener mListener;
 
@@ -91,57 +90,63 @@ public class ListFragment extends Fragment {
 
         fab_menu = (FloatingActionMenu) getActivity().findViewById(R.id.fab_menu);
 
-        mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
-        mRecyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        mRecyclerView.setLayoutManager(llm);
-
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
-        mode = sharedPreferences.getString("mode", null);
-
-        db_mode = getArguments().getString("db");
-
-        if (savedInstanceState == null) {
-            if (messages == null) messages = new ArrayList<>();
-        } else {
-            messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
+        if (getView() != null) {
+            mRecyclerView = (RecyclerView) getView().findViewById(R.id.rv);
         }
-        adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
-        mRecyclerView.setAdapter(adapter);
-        if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
 
+        if (mRecyclerView != null) {
+            mRecyclerView.setHasFixedSize(true);
+            LinearLayoutManager llm = new LinearLayoutManager(getContext());
+            mRecyclerView.setLayoutManager(llm);
 
-        /* Show/hide floating button*/
-        fab_menu.setClosedOnTouchOutside(true);
-        mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
-        /* /Show/hide floating button*/
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getString(R.string.PREFERENCES_NAME), Context.MODE_PRIVATE);
+            mode = sharedPreferences.getString("mode", null);
 
-        fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-        fab_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fab_menu.close(false);
-                startFragment(new NewMessageFormFragment());
-                mListener.onFABNewMessageCommerce(getString(R.string.new_message));
+            db_mode = getArguments().getString("db");
+
+            if (savedInstanceState == null) {
+                if (messages == null) messages = new ArrayList<>();
+            } else {
+                messages = savedInstanceState.getParcelableArrayList(STATE_LIST);
             }
-        });
+            adapter = new MyAdapter(messages, new ItemClick(getActivity(), mRecyclerView));
+            mRecyclerView.setAdapter(adapter);
+            if (messages.size() == 0 || mListener.onReturnFromRemoved()) read();
 
-        if (mode.equals(getString(R.string.user))) fab_menu.setVisibility(View.INVISIBLE);
 
-        /* Swipe down to refresh */
-        final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
-        sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                read();
-                sr.setRefreshing(false);
-            }
-        });
-        sr.setColorSchemeResources(android.R.color.holo_blue_dark,
-                android.R.color.holo_green_dark,
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_red_dark);
-        /* /Swipe down to refresh */
+            /* Show/hide floating button*/
+            fab_menu.setClosedOnTouchOutside(true);
+            mRecyclerView.addOnScrollListener(new FloatingButtonScrollListener(fab_menu));
+            /* /Show/hide floating button*/
+
+            FloatingActionButton fab_button = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+            fab_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fab_menu.close(false);
+                    startFragment(new NewMessageFormFragment());
+                    mListener.onFABNewMessageCommerce(getString(R.string.new_message));
+                }
+            });
+
+            if (mode.equals(getString(R.string.user))) fab_menu.setVisibility(View.INVISIBLE);
+
+            /* Swipe down to refresh */
+            final SwipeRefreshLayout sr = (SwipeRefreshLayout) getView().findViewById(R.id.swiperefresh);
+            sr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    read();
+                    sr.setRefreshing(false);
+                }
+            });
+            sr.setColorSchemeResources(android.R.color.holo_blue_dark,
+                    android.R.color.holo_green_dark,
+                    android.R.color.holo_orange_dark,
+                    android.R.color.holo_red_dark);
+            /* /Swipe down to refresh */
+
+        }
 
     }
 

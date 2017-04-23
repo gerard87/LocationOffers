@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,6 +26,7 @@ import com.android.udl.locationoffers.listeners.FloatingButtonScrollListener;
 import com.android.udl.locationoffers.listeners.ItemClick;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -164,15 +166,16 @@ public class ListFragment extends Fragment {
                 ref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        adapter = (MyAdapter) mRecyclerView.getAdapter();
-                        adapter.removeAll();
-
+                        if (adapter != null) {
+                            adapter = (MyAdapter) mRecyclerView.getAdapter();
+                            adapter.removeAll();
+                        }
                         for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                             Log.d("COMMERCE","snapshot: " +
                                     postSnapshot.getValue(Message.class).getTitle());
                             Message message = postSnapshot.getValue(Message.class);
-
-                            downloadImage(message);
+                            if (message != null)
+                                downloadImage(message);
                         }
                     }
 
@@ -193,19 +196,28 @@ public class ListFragment extends Fragment {
         }
     }
 
-    private void downloadImage (final Message message) {
+    private void downloadImage (@NonNull final Message message) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference =
-                storage.getReferenceFromUrl(getString(R.string.STORAGE_URL));
+                storage.getReferenceFromUrl("gs://location-offers.appspot.com");
+
         StorageReference imageReference =
-                storageReference.child(getString(R.string.STORAGE_PATH)+message.getCommerce_uid()+getString(R.string.STORAGE_FORMAT));
-        imageReference.getBytes(1024*1024).addOnSuccessListener(
-                new OnSuccessListener<byte[]>() {
+                storageReference.child("user_images/"+message.getCommerce_uid()+".png");
+        imageReference.getBytes(1024*1024)
+                .addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
-                        message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
-                        int i = adapter.add(message);
-                        selectMessageIfEdited(message, i);
+                        if (bytes != null) message.setImage(BitmapUtils.byteArrayToBitmap(bytes));
+                        if (adapter != null) {
+                            int i = adapter.add(message);
+                            selectMessageIfEdited(message, i);
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("Firebase Storage", "Storage exception: "+ e);
                     }
                 });
     }

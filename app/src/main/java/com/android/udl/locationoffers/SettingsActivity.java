@@ -3,25 +3,30 @@ package com.android.udl.locationoffers;
 
 
 import android.annotation.TargetApi;
-import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v4.os.AsyncTaskCompat;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 import java.util.List;
 
@@ -166,49 +171,82 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_user);
             setHasOptionsMenu(true);
 
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
             preferenceName = (EditTextPreference) findPreference("example_text");
             preferencePass = (EditTextPreference) findPreference("example_pass");
 
             bindPreferenceSummaryToValue(preferenceName);
             bindPreferenceSummaryToValue(preferencePass);
 
-            final SharedPreferences sharedPreferences =
-                    getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+            cleanPasswordText();
 
-            etpNameSetText(sharedPreferences.getString("user", null));
+            if (user != null) {
 
-            preferenceName.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                etpNameSetText(user.getDisplayName());
 
-                    String name = newValue.toString();
-                    ContentValues data = new ContentValues();
-                    data.put("name", name);
-                    update(data, sharedPreferences.getInt("id", -1));
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("user", name);
-                    etpNameSetText(name);
+                if (user.getProviders() != null && user.getProviders().get(0).equals("google.com")) {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+                    dialog.setMessage("You can not edit user fields because you are logged in using Google Sign in")
+                            .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    getActivity().finish();
+                                }
+                            })
+                            .setCancelable(false).create().show();
+                } else {
 
-                    Toast.makeText(getContext(),"Changed username to " + newValue.toString(),
-                            Toast.LENGTH_SHORT).show();
+                    preferenceName.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                        @Override
+                        public boolean onPreferenceChange(Preference preference, Object newValue) {
+                            final String name = newValue.toString();
 
-                    return true;
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(name)
+                                    .build();
+
+                            user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d("Firebase", "User profile updated.");
+                                                etpNameSetText(name);
+                                                Toast.makeText(getActivity(),
+                                                        "Changed username to " + name,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+
+                            return true;
+                        }
+                    });
+
+                    preferencePass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                        @Override
+                        public boolean onPreferenceChange(Preference preference, Object newValue) {
+                            String pass = newValue.toString();
+
+                            user.updatePassword(pass)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d("Firebase", "User password updated.");
+                                                Toast.makeText(getActivity(),"Password changed!",
+                                                        Toast.LENGTH_SHORT).show();
+                                                cleanPasswordText();
+                                            }
+                                        }
+                                    });
+                            return true;
+                        }
+                    });
+
                 }
-            });
-
-            preferencePass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    String pass = newValue.toString();
-                    ContentValues data = new ContentValues();
-                    data.put("password", pass);
-                    update(data, sharedPreferences.getInt("id", -1));
-
-                    Toast.makeText(getContext(),"Password changed!",
-                            Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-            });
+            }
         }
 
         private void etpNameSetText(String text) {
@@ -216,9 +254,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             preferenceName.setSummary(text);
         }
 
-
-        private void update (final ContentValues data, final int id) {
-
+        private void cleanPasswordText() {
+            preferencePass.setText("");
+            preferencePass.setSummary("");
         }
 
         @Override

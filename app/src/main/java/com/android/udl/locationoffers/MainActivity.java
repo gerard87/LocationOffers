@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity
 
         TextView tv = (TextView) navigationView.getHeaderView(0)
                 .findViewById(R.id.textView);
-        tv.setText(sharedPreferences.getString("user", null));
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) tv.setText(user.getDisplayName());
 
         if (savedInstanceState == null) {
 

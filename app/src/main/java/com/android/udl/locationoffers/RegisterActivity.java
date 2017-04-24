@@ -144,7 +144,11 @@ public class RegisterActivity extends AppCompatActivity
 
                             } else {
                                 reference.child("mode").setValue(getString(R.string.user));
-                                reference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
+                                String token = FirebaseInstanceId.getInstance().getToken();
+                                if(token != null){
+                                    reference.child("token").setValue(token);
+                                }
+
                             }
                             finish();
                         }

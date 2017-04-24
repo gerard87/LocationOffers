@@ -42,6 +42,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -367,20 +368,40 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void firebaseAuthWithGoogle (GoogleSignInAccount account) {
+    private void firebaseAuthWithGoogle (final GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d("Google sign in", "signInWithCredential:onComplete:"+task.isSuccessful());
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    Log.d("Google sign in", "signInWithCredential:onComplete:"+task.isSuccessful());
 
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(getApplicationContext(),
-                                    getString(R.string.login_error_message), Toast.LENGTH_SHORT).show();
-                        }
+                    if (!task.isSuccessful()) {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.login_error_message), Toast.LENGTH_SHORT).show();
+                    }else{
+                        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+                        db = FirebaseDatabase.getInstance();
+                        final FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                        reference = db.getReference("Users/"+user.getUid());
+
+                        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                reference.child("mode").setValue(getString(R.string.user));
+                                reference.child("token").setValue(account.getIdToken());
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
-                });
+
+                }
+        });
 
 
     }

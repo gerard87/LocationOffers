@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
@@ -31,7 +30,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -287,46 +285,4 @@ public class ListFragment extends Fragment {
     public void closeFab () {
         fab_menu.close(true);
     }
-
-    @Override
-    public void onPause() {
-        DatabaseReference ref = db.getReference("User messages");
-        ref.removeEventListener(new MyListener());
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        DatabaseReference ref = db.getReference("User messages");
-        ref.addChildEventListener(new MyListener());
-    }
-
-    private class MyListener implements ChildEventListener {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            read();
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    }
-
 }

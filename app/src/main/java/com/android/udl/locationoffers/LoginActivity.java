@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final int RC_SIGN_IN = 1;
     private static final int PLACE_PICKER_REQUEST = 2;
     private static final int USER = 0;
-    private static final int COMMERCE = 1;
+    private static final int COMMERCE = 0;
 
     private static final String STATE_USER = "user";
     private static final String STATE_PASS = "pass";
@@ -231,19 +231,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void selectMode (final DataSnapshot dataSnapshot) {
-        CharSequence[] charSequence = new CharSequence[2];
-        charSequence[0] = "User";
-        charSequence[1] = "Commerce";
+        CharSequence[] charSequence = new CharSequence[1];
+        //charSequence[0] = "User";
+        charSequence[0] = "Commerce";
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.login_user_mode))
                 .setItems(charSequence, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    case USER:
+                    /*case USER:
                         Log.d("Mode", "User selected");
                         mode = getString(R.string.user);
-                        break;
+                        break;*/
                     case COMMERCE:
                         Log.d("Mode", "Commerce selected");
                         mode = getString(R.string.commerce);

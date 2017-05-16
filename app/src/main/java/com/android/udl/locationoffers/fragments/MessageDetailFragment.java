@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,8 +25,11 @@ import com.android.udl.locationoffers.domain.Message;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.BarcodeFormat;
@@ -44,6 +48,7 @@ public class MessageDetailFragment extends Fragment {
     private String mode;
 
     FirebaseUser user;
+    private FirebaseDatabase database;
 
     public MessageDetailFragment() {
         // Required empty public constructor
@@ -80,8 +85,8 @@ public class MessageDetailFragment extends Fragment {
         TextView textView_title = (TextView) view.findViewById(R.id.title_detail);
         TextView textView_description = (TextView) view.findViewById(R.id.description_detail);
         TextView textView_name = (TextView) view.findViewById(R.id.name_detail);
-        ImageView imageViewQR = (ImageView) view.findViewById(R.id.image_qr);
-        TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
+        final ImageView imageViewQR = (ImageView) view.findViewById(R.id.image_qr);
+        final TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
 
         Bundle args = getArguments();
 
@@ -107,6 +112,29 @@ public class MessageDetailFragment extends Fragment {
                         Bitmap bm = encodeAsBitmap(toEncode, getSizeWidth());
                         if(bm != null) {
                             imageViewQR.setImageBitmap(bm);
+
+                            database = FirebaseDatabase.getInstance();
+
+                            DatabaseReference ref = database.getReference("User messages")
+                                    .child(user.getUid()).child(message.getMessage_uid()).child("used");
+
+                            ref.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    boolean isUsed = dataSnapshot.getValue(boolean.class);
+                                    if(isUsed){
+                                        message.setUsed(true);
+                                        imageViewQR.setVisibility(View.INVISIBLE);
+                                        textView_used.setVisibility(View.VISIBLE);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+
                         }
 
                     } catch (WriterException ignored) {}

@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.android.udl.locationoffers.MainActivity;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.uploadToAPI.ApiUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -154,6 +155,8 @@ public class NewMessageFormFragment extends Fragment {
                 ed_desc.getText().toString(), user.getUid(),
                 user.getDisplayName(), msgref.getKey());
         msgref.setValue(message);
+
+        ApiUtils.saveMessage(message);
     }
 
     private void updateFirebase (DatabaseReference ref) {

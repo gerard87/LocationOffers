@@ -3,6 +3,8 @@ package com.android.udl.locationoffers.domain;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 
@@ -12,14 +14,28 @@ import com.android.udl.locationoffers.Utils.BitmapUtils;
 
 public class Message implements Parcelable{
 
-
+    @SerializedName("title")
+    @Expose
     private String title;
+
+    @SerializedName("description")
+    @Expose
     private String description;
+
     private Bitmap image;
+
     private boolean removed;
+
     private String commerce_name;
+
+    @SerializedName("commerceId")
+    @Expose
     private String commerce_uid;
+
+    @SerializedName("messageId")
+    @Expose
     private String message_uid;
+
     private Boolean used;//USER
 
     public Message () {

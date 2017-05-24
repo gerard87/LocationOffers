@@ -34,6 +34,8 @@ import com.android.udl.locationoffers.fragments.MessageDetailFragment;
 import com.android.udl.locationoffers.fragments.NewMessageFormFragment;
 import com.android.udl.locationoffers.fragments.PlacesInterestsFragment;
 import com.android.udl.locationoffers.services.NotificationService;
+import com.android.udl.locationoffers.uploadToAPI.APIController;
+import com.android.udl.locationoffers.uploadToAPI.ReceivedToUpload;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -323,6 +325,9 @@ public class MainActivity extends AppCompatActivity
                     String messageId = contents.split("::")[1];
 
                     setMessageAsUsed(user, messageId);
+
+                    APIController.getInstance().saveExchangeDate(messageId,user);
+
                 }catch (ArrayIndexOutOfBoundsException e){
                     Toast.makeText(getApplicationContext(),getString(R.string.MESSAGE_INVALID),Toast.LENGTH_SHORT).show();
                 }

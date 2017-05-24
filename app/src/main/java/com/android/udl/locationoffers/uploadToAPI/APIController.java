@@ -43,7 +43,7 @@ public class APIController {
                 .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.i("APISERVER", "SUBIDO");
+                Log.i("APISERVER", "UPLOADED MESSAGE");
             }
 
             @Override
@@ -63,7 +63,7 @@ public class APIController {
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        Log.i("APISERVER", "SUBIDO");
+                        Log.i("APISERVER", "UPLOADED COMMERCE");
                     }
 
                     @Override
@@ -83,7 +83,27 @@ public class APIController {
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        Log.i("APISERVER", "SUBIDO RECEIVER");
+                        Log.i("APISERVER", "UPLOADED RECEIVED");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
+
+
+    public Task<Void> saveExchangeDate(String messageId, String userId){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().saveExchangeDate(messageId, userId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "UPLOADED EXCHANGEDATE");
                     }
 
                     @Override

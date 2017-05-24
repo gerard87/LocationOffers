@@ -2,7 +2,9 @@ package com.android.udl.locationoffers.uploadToAPI;
 
 import com.android.udl.locationoffers.domain.Message;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
@@ -13,12 +15,12 @@ import retrofit2.http.POST;
 
 public interface APIService {
 
-    @POST("/messages/")
+    @POST("messages")
     @FormUrlEncoded
-    Call<Message> saveMessage(@Field("messageId") String messageId,
-                              @Field("commerceId") String commerceId,
-                              @Field("title") String title,
-                              @Field("description") String description,
-                              @Field("download") int download,
-                              @Field("exchange") int exchange);
+    Call<ResponseBody> saveMessage(@Field("messageId") String messageId,
+                                   @Field("commerceId") String commerceId,
+                                   @Field("title") String title,
+                                   @Field("description") String description,
+                                   @Field("download") int download,
+                                   @Field("exchange") int exchange);
 }

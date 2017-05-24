@@ -5,9 +5,13 @@ import android.util.Log;
 import com.android.udl.locationoffers.domain.Message;
 import com.google.android.gms.tasks.Task;
 
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by ubuntu on 24/05/17.
@@ -15,36 +19,22 @@ import retrofit2.Response;
 
 public class ApiUtils {
 
-    private ApiUtils() {}
-    private String TAG = "APISERVICE";
+    private static Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl("https://locationoffers.herokuapp.com/")
+            .client(getHttpClient())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
 
-    public static final String BASE_URL = "https://locationoffers.herokuapp.com/";
+    private static APIService service = retrofit.create(APIService.class);
 
-    public static APIService getAPIService() {
-        return RetrofitClient.getClient(BASE_URL).create(APIService.class);
+    private static OkHttpClient getHttpClient(){
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+        return httpClient.build();
     }
 
-    public static void saveMessage(Message message){
-        Log.i("APISERVICE","Intentant guardar missatge");
-        APIService mAPIService = ApiUtils.getAPIService();
-
-        mAPIService.saveMessage(message.getMessage_uid(),
-                message.getCommerce_uid(),
-                message.getTitle(),
-                message.getDescription(),
-                0,0).enqueue(new Callback<Message>() {
-            @Override
-            public void onResponse(Call<Message> call, Response<Message> response) {
-                if(response.isSuccessful()){
-                    Log.i("APISERVICE","Message Submitted");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Message> call, Throwable t) {
-                Log.i("APISERVICE","Message Submitted");
-            }
-        });
-
+    public static APIService getService(){
+        return service;
     }
+
 }

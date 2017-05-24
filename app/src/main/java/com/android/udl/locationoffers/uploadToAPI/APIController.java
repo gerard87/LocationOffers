@@ -74,4 +74,24 @@ public class APIController {
 
         return tcs.getTask();
     }
+
+
+    public Task<Void> saveReceived(ReceivedToUpload received){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().saveReceived(received)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "SUBIDO RECEIVER");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
 }

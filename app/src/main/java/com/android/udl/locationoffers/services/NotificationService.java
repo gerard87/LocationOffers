@@ -19,6 +19,8 @@ import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.domain.PlacesInterestEnum;
 import com.android.udl.locationoffers.domain.PlacesInterestEnumTranslator;
+import com.android.udl.locationoffers.uploadToAPI.APIController;
+import com.android.udl.locationoffers.uploadToAPI.ReceivedToUpload;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -255,6 +257,9 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                 if (!dataSnapshot.exists()) {
                     dataSnapshot.getRef().setValue(message);
                     //showNotification(message);
+                    APIController.getInstance().saveReceived(
+                            new ReceivedToUpload(message.getMessage_uid(),user.getUid())
+                    );
                 }
             }
 

@@ -20,4 +20,7 @@ public interface APIService {
 
     @POST("commerces")
     Call<ResponseBody> saveCommerce(@Body CommerceToUpload commerce);
+
+    @POST("received")
+    Call<ResponseBody> saveReceived(@Body ReceivedToUpload received);
 }

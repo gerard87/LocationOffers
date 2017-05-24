@@ -20,7 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiUtils {
 
     private static Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("https://locationoffers.herokuapp.com/")
+            .baseUrl("https://locationoffers.herokuapp.com/logs/")
             .client(getHttpClient())
             .addConverterFactory(GsonConverterFactory.create())
             .build();

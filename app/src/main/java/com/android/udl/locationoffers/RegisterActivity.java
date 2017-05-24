@@ -30,6 +30,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.udl.locationoffers.Utils.BitmapUtils;
+import com.android.udl.locationoffers.uploadToAPI.APIController;
+import com.android.udl.locationoffers.uploadToAPI.ApiUtils;
+import com.android.udl.locationoffers.uploadToAPI.CommerceToUpload;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -140,7 +143,7 @@ public class RegisterActivity extends AppCompatActivity
                                 reference.child("mode").setValue(getString(R.string.commerce));
                                 reference.child("place").setValue(placesID);
                                 uploadImage(user, image);
-
+                                APIController.getInstance().saveCommerce(new CommerceToUpload(user.getUid(),user.getDisplayName()));
 
                             } else {
                                 reference.child("mode").setValue(getString(R.string.user));

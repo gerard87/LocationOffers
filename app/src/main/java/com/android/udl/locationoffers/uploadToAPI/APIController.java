@@ -34,12 +34,12 @@ public class APIController {
     public Task<Void> saveMessage(Message message){
         final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
-
-        ApiUtils.getService().saveMessage(message.getMessage_uid(),
+        MessageToUpload msgToUpload = new MessageToUpload(message.getMessage_uid(),
                 message.getCommerce_uid(),
                 message.getTitle(),
-                message.getDescription(),
-                0,0)
+                message.getDescription());
+
+        ApiUtils.getService().saveMessage(msgToUpload)
                 .enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -51,6 +51,26 @@ public class APIController {
                 Log.i("APISERVER", "ERROR");
             }
         });
+
+        return tcs.getTask();
+    }
+
+
+    public Task<Void> saveCommerce(CommerceToUpload commerce){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().saveCommerce(commerce)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "SUBIDO");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
 
         return tcs.getTask();
     }

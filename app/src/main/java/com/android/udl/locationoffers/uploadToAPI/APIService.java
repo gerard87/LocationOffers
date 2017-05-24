@@ -16,11 +16,8 @@ import retrofit2.http.POST;
 public interface APIService {
 
     @POST("messages")
-    @FormUrlEncoded
-    Call<ResponseBody> saveMessage(@Field("messageId") String messageId,
-                                   @Field("commerceId") String commerceId,
-                                   @Field("title") String title,
-                                   @Field("description") String description,
-                                   @Field("download") int download,
-                                   @Field("exchange") int exchange);
+    Call<ResponseBody> saveMessage(@Body MessageToUpload message);
+
+    @POST("commerces")
+    Call<ResponseBody> saveCommerce(@Body CommerceToUpload commerce);
 }

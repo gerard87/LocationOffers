@@ -93,6 +93,16 @@
             android:visibility="invisible"
             tools:text="@string/MESSAGE_ALREADY_USED" />
 
+        <TextView
+            android:id="@+id/downloadCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/exchangeCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>

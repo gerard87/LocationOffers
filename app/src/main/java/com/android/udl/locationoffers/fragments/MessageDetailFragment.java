@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -88,6 +87,8 @@ public class MessageDetailFragment extends Fragment {
         TextView textView_name = (TextView) view.findViewById(R.id.name_detail);
         final ImageView imageViewQR = (ImageView) view.findViewById(R.id.image_qr);
         final TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
+        TextView textView_downloadCount = (TextView) view.findViewById(R.id.downloadCount);
+        TextView textView_exchangeCount = (TextView) view.findViewById(R.id.exchangeCount);
 
         Bundle args = getArguments();
 
@@ -152,6 +153,11 @@ public class MessageDetailFragment extends Fragment {
 
             if (mode.equals(getString(R.string.user)) && !removed) {
                 fab.setVisibility(View.INVISIBLE);
+            }
+
+            if (mode.equals(getString(R.string.commerce))) {
+                APIController.getInstance().getNumDownloads(message.getMessage_uid());
+                APIController.getInstance().getNumExchanges(message.getMessage_uid());
             }
 
             if (removed) {

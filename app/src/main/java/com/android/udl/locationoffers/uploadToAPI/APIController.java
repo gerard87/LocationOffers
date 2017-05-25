@@ -6,6 +6,7 @@ import com.android.udl.locationoffers.domain.Message;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -165,6 +166,52 @@ public class APIController {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         Log.i("APISERVER", "Exchange counter increased");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
+
+    public Task<Void> getNumDownloads(String messageId){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().getNumDownloads(messageId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            Log.i("APISERVER", response.body().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
+
+    public Task<Void> getNumExchanges(String messageId){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().getNumExchanges(messageId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            Log.i("APISERVER", response.body().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override

@@ -1,22 +1,14 @@
 package com.android.udl.locationoffers.uploadToAPI;
 
-import com.android.udl.locationoffers.domain.Message;
-
 import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
-import retrofit2.http.Url;
-
-/**
- * Created by ubuntu on 24/05/17.
- */
 
 public interface APIService {
 
@@ -45,4 +37,12 @@ public interface APIService {
     Call<ResponseBody> setMessageAsRemoved(@Path(value = "messageId", encoded = true)
                                                        String messageId,
                                            @Body Map<String, Boolean> data);
+
+    @GET("messages/{messageId}/numDownloads")
+    Call<ResponseBody> getNumDownloads(@Path(value = "messageId", encoded = true)
+                                                   String messageId);
+
+    @GET("messages/{messageId}/numExchanges")
+    Call<ResponseBody> getNumExchanges(@Path(value = "messageId", encoded = true)
+                                               String messageId);
 }

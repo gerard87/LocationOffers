@@ -161,6 +161,7 @@ public class MessageDetailFragment extends Fragment {
                     public void onClick(View v) {
                         mListener.onRemovedMessage(true);
                         moveFromXToY(false);
+                        APIController.getInstance().setMessageAsRemoved(message.getMessage_uid(),false);
                     }
                 });
             } else {
@@ -302,8 +303,6 @@ public class MessageDetailFragment extends Fragment {
                     .child(user.getUid())
                     .child(message.getMessage_uid());
             ref.removeValue();
-
-            APIController.getInstance().setMessageAsRemoved(message.getMessage_uid(),true);
         }
     }
 

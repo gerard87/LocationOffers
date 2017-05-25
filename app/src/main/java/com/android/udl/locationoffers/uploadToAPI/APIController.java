@@ -152,4 +152,27 @@ public class APIController {
 
         return tcs.getTask();
     }
+
+
+    public Task<Void> setMessageAsRemoved(String messageId, boolean removed){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("removed", removed);
+
+        ApiUtils.getService().setMessageAsRemoved(messageId, data)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "Exchange counter increased");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
 }

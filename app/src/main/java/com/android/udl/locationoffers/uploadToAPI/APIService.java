@@ -2,6 +2,8 @@ package com.android.udl.locationoffers.uploadToAPI;
 
 import com.android.udl.locationoffers.domain.Message;
 
+import java.util.Map;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -38,4 +40,9 @@ public interface APIService {
     @PUT("messages/{messageId}/exchange")
     Call<ResponseBody> increaseExchangeCounter(@Path(value = "messageId", encoded = true)
                                                        String messageId);
+
+    @PUT("messages/{messageId}/removed")
+    Call<ResponseBody> setMessageAsRemoved(@Path(value = "messageId", encoded = true)
+                                                       String messageId,
+                                           @Body Map<String, Boolean> data);
 }

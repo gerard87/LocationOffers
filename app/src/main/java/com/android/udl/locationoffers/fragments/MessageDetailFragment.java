@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
+import com.android.udl.locationoffers.uploadToAPI.APIController;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -272,6 +273,7 @@ public class MessageDetailFragment extends Fragment {
             case R.id.delete_detail:
                 mListener.onRemovedMessage(true);
                 moveFromXToY(true);
+                APIController.getInstance().setMessageAsRemoved(message.getMessage_uid(),true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -301,6 +303,7 @@ public class MessageDetailFragment extends Fragment {
                     .child(message.getMessage_uid());
             ref.removeValue();
 
+            APIController.getInstance().setMessageAsRemoved(message.getMessage_uid(),true);
         }
     }
 

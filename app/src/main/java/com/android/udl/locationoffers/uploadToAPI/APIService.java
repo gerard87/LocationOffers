@@ -30,4 +30,12 @@ public interface APIService {
     @PUT("received/{messageId}/{userId}/exchangedate")
     Call<ResponseBody> saveExchangeDate(@Path(value = "messageId", encoded = true)String messageId,
                                         @Path(value = "userId", encoded = true)String userId);
+
+    @PUT("messages/{messageId}/downloads")
+    Call<ResponseBody> increaseDownloadCounter(@Path(value = "messageId", encoded = true)
+                                                        String messageId);
+
+    @PUT("messages/{messageId}/exchange")
+    Call<ResponseBody> increaseExchangeCounter(@Path(value = "messageId", encoded = true)
+                                                       String messageId);
 }

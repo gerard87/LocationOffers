@@ -327,6 +327,7 @@ public class MainActivity extends AppCompatActivity
                     setMessageAsUsed(user, messageId);
 
                     APIController.getInstance().saveExchangeDate(messageId,user);
+                    APIController.getInstance().increaseExchangeCounter(messageId);
 
                 }catch (ArrayIndexOutOfBoundsException e){
                     Toast.makeText(getApplicationContext(),getString(R.string.MESSAGE_INVALID),Toast.LENGTH_SHORT).show();

@@ -260,6 +260,7 @@ public class NotificationService extends Service implements GoogleApiClient.Conn
                     APIController.getInstance().saveReceived(
                             new ReceivedToUpload(message.getMessage_uid(),user.getUid())
                     );
+                    APIController.getInstance().increaseDownloadCounter(message.getMessage_uid());
                 }
             }
 

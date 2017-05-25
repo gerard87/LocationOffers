@@ -114,4 +114,42 @@ public class APIController {
 
         return tcs.getTask();
     }
+
+    public Task<Void> increaseDownloadCounter(String messageId){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().increaseDownloadCounter(messageId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "Download counter increased");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
+
+    public Task<Void> increaseExchangeCounter(String messageId){
+        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().increaseExchangeCounter(messageId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        Log.i("APISERVER", "Exchange counter increased");
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
 }

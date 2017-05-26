@@ -235,4 +235,32 @@ public class APIController {
 
         return tcs.getTask();
     }
+
+    public Task<String> getPublishDate(String messageId){
+        final TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
+
+        ApiUtils.getService().getPublishDate(messageId)
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            String s = response.body().string();
+                            s = s.substring(1, s.length()-1);
+                            JSONObject json = new JSONObject(s);
+                            String res = json.getString("publishDate");
+                            Log.i("APISERVER", s);
+                            tcs.setResult(res);
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.i("APISERVER", "ERROR");
+                    }
+                });
+
+        return tcs.getTask();
+    }
 }

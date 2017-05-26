@@ -54,6 +54,7 @@
 
     <string name="download_count">Download count:</string>
     <string name="exchange_count">Exchange count:</string>
+    <string name="publish_date">Publish date:</string>
 
     <string name="TYPE_ACCOUNTING">Accounting</string>
     <string name="TYPE_AIRPORT">Airport</string>

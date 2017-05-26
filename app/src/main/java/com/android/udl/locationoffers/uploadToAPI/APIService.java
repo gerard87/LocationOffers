@@ -45,4 +45,8 @@ public interface APIService {
     @GET("messages/{messageId}/numExchanges")
     Call<ResponseBody> getNumExchanges(@Path(value = "messageId", encoded = true)
                                                String messageId);
+
+    @GET("messages/{messageId}/publishDate")
+    Call<ResponseBody> getPublishDate(@Path(value = "messageId", encoded = true)
+                                               String messageId);
 }

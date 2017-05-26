@@ -92,6 +92,7 @@ public class MessageDetailFragment extends Fragment {
         final TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
         final TextView textView_downloadCount = (TextView) view.findViewById(R.id.downloadCount);
         final TextView textView_exchangeCount = (TextView) view.findViewById(R.id.exchangeCount);
+        final TextView textView_publishDate = (TextView) view.findViewById(R.id.publishDate);
 
         Bundle args = getArguments();
 
@@ -178,6 +179,15 @@ public class MessageDetailFragment extends Fragment {
                             }
                         });
             }
+
+            APIController.getInstance().getPublishDate(message.getMessage_uid())
+                    .addOnCompleteListener(new OnCompleteListener<String>() {
+                        @Override
+                        public void onComplete(@NonNull Task<String> task) {
+                            textView_publishDate.setText(
+                                    getString(R.string.publish_date) + " " + task.getResult());
+                        }
+                    });
 
             if (removed) {
                 fab.setImageResource(R.drawable.ic_restore_white_24dp);

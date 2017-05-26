@@ -52,6 +52,9 @@
     <string name="network_error">No internet. Check your network connection or your settings.</string>
     <string name="lost_connection">Lost connection.</string>
 
+    <string name="download_count">Download count:</string>
+    <string name="exchange_count">Exchange count:</string>
+
     <string name="TYPE_ACCOUNTING">Accounting</string>
     <string name="TYPE_AIRPORT">Airport</string>
     <string name="TYPE_AMUSEMENT_PARK">Amusement Park</string>

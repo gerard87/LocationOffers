@@ -6,6 +6,9 @@ import com.android.udl.locationoffers.domain.Message;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,16 +180,21 @@ public class APIController {
         return tcs.getTask();
     }
 
-    public Task<Void> getNumDownloads(String messageId){
-        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+    public Task<String> getNumDownloads(String messageId){
+        final TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
 
         ApiUtils.getService().getNumDownloads(messageId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         try {
-                            Log.i("APISERVER", response.body().string());
-                        } catch (IOException e) {
+                            String s = response.body().string();
+                            s = s.substring(1, s.length()-1);
+                            JSONObject json = new JSONObject(s);
+                            String res = json.getString("download");
+                            Log.i("APISERVER", s);
+                            tcs.setResult(res);
+                        } catch (IOException | JSONException e) {
                             e.printStackTrace();
                         }
                     }
@@ -200,16 +208,21 @@ public class APIController {
         return tcs.getTask();
     }
 
-    public Task<Void> getNumExchanges(String messageId){
-        final TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+    public Task<String> getNumExchanges(String messageId){
+        final TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
 
         ApiUtils.getService().getNumExchanges(messageId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         try {
-                            Log.i("APISERVER", response.body().string());
-                        } catch (IOException e) {
+                            String s = response.body().string();
+                            s = s.substring(1, s.length()-1);
+                            JSONObject json = new JSONObject(s);
+                            String res = json.getString("exchange");
+                            Log.i("APISERVER", s);
+                            tcs.setResult(res);
+                        } catch (IOException | JSONException e) {
                             e.printStackTrace();
                         }
                     }

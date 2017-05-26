@@ -96,12 +96,20 @@
         <TextView
             android:id="@+id/downloadCount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:lineSpacingExtra="8dp"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/exchangeCount"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:lineSpacingExtra="8dp"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:visibility="invisible" />
 
     </LinearLayout>
 

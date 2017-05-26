@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -22,7 +23,9 @@ import com.android.udl.locationoffers.R;
 import com.android.udl.locationoffers.Utils.BitmapUtils;
 import com.android.udl.locationoffers.domain.Message;
 import com.android.udl.locationoffers.uploadToAPI.APIController;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -87,8 +90,8 @@ public class MessageDetailFragment extends Fragment {
         TextView textView_name = (TextView) view.findViewById(R.id.name_detail);
         final ImageView imageViewQR = (ImageView) view.findViewById(R.id.image_qr);
         final TextView textView_used = (TextView) view.findViewById(R.id.usedCode);
-        TextView textView_downloadCount = (TextView) view.findViewById(R.id.downloadCount);
-        TextView textView_exchangeCount = (TextView) view.findViewById(R.id.exchangeCount);
+        final TextView textView_downloadCount = (TextView) view.findViewById(R.id.downloadCount);
+        final TextView textView_exchangeCount = (TextView) view.findViewById(R.id.exchangeCount);
 
         Bundle args = getArguments();
 
@@ -156,8 +159,24 @@ public class MessageDetailFragment extends Fragment {
             }
 
             if (mode.equals(getString(R.string.commerce))) {
-                APIController.getInstance().getNumDownloads(message.getMessage_uid());
-                APIController.getInstance().getNumExchanges(message.getMessage_uid());
+                APIController.getInstance().getNumDownloads(message.getMessage_uid())
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                textView_downloadCount.setText(
+                                        getString(R.string.download_count) + " " + task.getResult());
+                                textView_downloadCount.setVisibility(View.VISIBLE);
+                            }
+                        });
+                APIController.getInstance().getNumExchanges(message.getMessage_uid())
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                textView_exchangeCount.setText(
+                                        getString(R.string.exchange_count) + " " + task.getResult());
+                                textView_exchangeCount.setVisibility(View.VISIBLE);
+                            }
+                        });
             }
 
             if (removed) {
